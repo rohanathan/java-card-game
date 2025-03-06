@@ -1,0 +1,40 @@
+.vscode
+# Play Framework specific
+**/target/
+/project/project
+/project/target/
+/logs/
+/public/stylesheets/main.css
+/public/stylesheets/main.min.css
+/public/stylesheets/main.css.map
+/dist/
+/dist-*
+/*.log
+/RUNNING_PID
+
+# Maven/Coursier cache
+Coursier/cache/
+
+# IDE specific
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.metals/
+.bloop/
+metals.sbt
+.classpath
+.settings/
+.project
+.factorypath
+.scalafmt.conf
+null/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+/logs/*
+!.gitkeep
