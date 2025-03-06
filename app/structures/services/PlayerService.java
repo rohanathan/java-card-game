@@ -5,6 +5,8 @@ import commands.BasicCommands;
 import structures.basic.player.Player;
 import structures.basic.player.HumanPlayer;
 import structures.basic.cards.Card;
+import structures.GameState;
+
 
 
 /**
@@ -12,9 +14,14 @@ import structures.basic.cards.Card;
  */
 public class PlayerService {
     private final ActorRef out;
+    private final GameState gs;
 
-    public PlayerService(ActorRef out) {
+
+    public PlayerService(ActorRef out, GameState gs) {
         this.out = out;
+        // Store reference to GameState
+        this.gs = gs; 
+
     }
     // Method to modify the health of a player
 	public void modifyPlayerHealth(Player player, int newHealth) {
@@ -27,7 +34,10 @@ public class PlayerService {
 		} else {
 			BasicCommands.setPlayer2Health(out, player);
 		}
-
+        // Check if the player's health is less than or equal to 0
+        if (newHealth <= 0) {
+            gs.endGame(out);  
+            }
 	}
 
     // Method to modify the mana of a player

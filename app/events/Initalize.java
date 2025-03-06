@@ -23,7 +23,7 @@ public class Initalize implements EventProcessor {
 
 		gameState.gameInitalised = true;
 		// Create PlayerService instance
-		PlayerService playerService = new PlayerService(out); 
+		PlayerService playerService = new PlayerService(out, gameState); 
 
 		// Initialise the game and pass services to GameState
 		gameState.init(out, playerService);
