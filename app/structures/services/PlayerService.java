@@ -10,42 +10,51 @@ import structures.GameState;
 
 
 /**
- * PlayerService handles all player-related actions such as health, mana, and card drawing.
+ * Handles player-related functionalities, including health, mana, and card management.
  */
 public class PlayerService {
     private final ActorRef out;
-    private final GameState gs;
+    private final GameState gameState;
 
-
-    public PlayerService(ActorRef out, GameState gs) {
+    /**
+     * Constructor to initialize PlayerService with references to the Actor system and game state.
+     * @param out The ActorRef used for communication.
+     * @param gameState The current state of the game.
+     */
+    public PlayerService(ActorRef out, GameState gameState) {
         this.out = out;
         // Store reference to GameState
-        this.gs = gs; 
+        this.gameState = gameState; 
 
     }
-    // Method to modify the health of a player
-	public void modifyPlayerHealth(Player player, int newHealth) {
+    /**
+     * Adjusts a player's health and updates the UI accordingly.
+     * If health reaches zero, the game ends.
+     * @param player The player whose health is being modified.
+     * @param updatedHealth The new health value.
+     */
+	public void modifyPlayerHealth(Player player, int updatedHealth) {
 		// Set the new health value on the player object first
-		player.setHealth(newHealth);
-
+		player.setHealth(updatedHealth);
 		// Now modify the health on the frontend using the BasicCommands
 		if (player instanceof HumanPlayer) {
 			BasicCommands.setPlayer1Health(out, player);
 		} else {
 			BasicCommands.setPlayer2Health(out, player);
 		}
-        // Check if the player's health is less than or equal to 0
-        if (newHealth <= 0) {
-            gs.endGame(out);  
+        // End the game if a player's health drops to zero
+        if (updatedHealth <= 0) {
+            gameState.endGame(out);  
             }
 	}
+    /**
+     * Updates the player's mana and reflects changes in the UI.
+     * @param player The player whose mana is being updated.
+     * @param updatedMana The new mana value.
+     */
+	public void modifyPlayerMana(Player player, int updatedMana) {
+		player.setMana(updatedMana);
 
-    // Method to modify the mana of a player
-	public void modifyPlayerMana(Player player, int newMana) {
-		// Set the new mana value on the player object first
-		player.setMana(newMana);
-
-		// Now modify the mana on the frontend using the BasicCommands
 		if (player instanceof HumanPlayer) {
 			BasicCommands.setPlayer1Mana(out, player);
 		} else {
@@ -53,7 +62,12 @@ public class PlayerService {
 		}
 	}
 
-    // Method to draw a card for a player
+    /**
+     * Draws a specified number of cards for a player and updates the UI accordingly.
+     * Prevents drawing if the deck is empty.
+     * @param player The player who will draw the cards.
+     * @param cardCount The number of cards to draw.
+     */
     public void drawCards(Player player, int numberOfCards) {
 		if (player instanceof HumanPlayer) {
 			for (int i = 0; i < numberOfCards; i++) {

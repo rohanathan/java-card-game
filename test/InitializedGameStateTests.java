@@ -37,10 +37,9 @@ public class InitializedGameStateTests {
   }
 
   @Test
-  public void checkGameServicesLoaded() {
+  public void checkGameManagersLoaded() {
     
     initalizeProcessor.processEvent(null, gameState, eventMessage); // send it to the initalize event processor
-    assertNotNull(gameState.gameService);
+    assertNotNull(gameState.gameManager);
   }
-
 }

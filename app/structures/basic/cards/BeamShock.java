@@ -17,7 +17,7 @@ public class BeamShock {
 		Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
 		AIPlayer ai = (AIPlayer) gs.getAi();
 		ai.stunnedUnit = u;
-		gs.gameService.stunning(u.getActiveTile(gs.getBoard()));
+		gs.gameManager.stunning(u.getActiveTile(gs.getBoard()));
 		
 	}
 }

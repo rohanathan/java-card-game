@@ -18,27 +18,27 @@ import java.util.Set;
 import static utils.BasicObjectBuilders.loadUnit;
 
 /**
- * The GameService class is responsible for managing various aspects of the game logic and state.
+ * The GameManager class is responsible for managing various aspects of the game logic and state.
  * It acts as a central service for managing core game mechanics and facilitating communication between the game state and the user interface.
  * This class provides a comprehensive set of methods to handle game functionalities including, but not limited to:
- * - Updating player health and mana
- * - Loading and setting up the game board and units
+ * - Updating player health and mana 1
+ * - Loading and setting up the game board and units 2
  * - Highlighting valid movement and attack ranges for units
  * - Performing unit movements and attacks
  * - Summoning units onto the game board
  * - Drawing cards from the player's deck
  * - Casting spells
  * - Handling various game events and interactions
- * Through these functionalities, the GameService ensures the smooth execution of game rules and interactions,
+ * Through these functionalities, the GameManager ensures the smooth execution of game rules and interactions,
  * thereby providing a seamless gaming experience.
  */
-public class GameService {
+public class GameManager {
 	
 	private final ActorRef out;
 	private final GameState gs;
 	private final PlayerService playerService;
 
-	public GameService(ActorRef out, GameState gs, PlayerService playerService) {
+	public GameManager(ActorRef out, GameState gs, PlayerService playerService) {
 		this.out = out;
 		this.gs = gs;
 		this.playerService = playerService; // Initialize PlayerService
@@ -981,7 +981,7 @@ public class GameService {
 		}
 	}
 
-	// Method in GameService class
+	// Method in GameManager class
 	public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
 		
 		if (gameState.getCurrentPlayer() instanceof HumanPlayer &&

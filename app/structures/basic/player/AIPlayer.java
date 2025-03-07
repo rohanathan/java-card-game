@@ -73,7 +73,7 @@ public class AIPlayer extends Player {
 			if (unit.hasAttacked() && unit.hasMoved()) {
 				continue;
 			} else if (!unit.hasMoved() && !unit.hasAttacked()) {
-				positions = gameState.gameService.getValidMoves(gameState.getBoard().getTiles(), unit);
+				positions = gameState.gameManager.getValidMoves(gameState.getBoard().getTiles(), unit);
 
 			}
 			for (Tile tile : positions) {
@@ -94,7 +94,7 @@ public class AIPlayer extends Player {
 			if (unit.hasAttacked()) {
 				continue;
 			}
-			Set<Tile> targets = gameState.gameService.findAttackTargets(unit);
+			Set<Tile> targets = gameState.gameManager.findAttackTargets(unit);
 
 			for (Tile tile : targets) {
 				attacks.add(new PossibleAttack(unit, tile));
@@ -510,14 +510,14 @@ public class AIPlayer extends Player {
 			PossibleSummon bestSummon = returnBestSummon();
 			if (bestSpell != null && bestSummon != null) {
 				if (bestSpell.moveQuality > bestSummon.moveQuality) {
-					gameState.gameService.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
+					gameState.gameManager.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
 				} else {
-					gameState.gameService.castCardFromHand(bestSummon.card, bestSummon.tile);
+					gameState.gameManager.castCardFromHand(bestSummon.card, bestSummon.tile);
 				}
 			} else if (bestSpell != null) {
-				gameState.gameService.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
+				gameState.gameManager.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
 			} else if (bestSummon != null) {
-				gameState.gameService.castCardFromHand(bestSummon.card, bestSummon.tile);
+				gameState.gameManager.castCardFromHand(bestSummon.card, bestSummon.tile);
 			} else {
 				return;
 			}
@@ -621,7 +621,7 @@ public class AIPlayer extends Player {
 		for (Card card : this.hand.getCards()) {
 			if (!card.isCreature()) {
 				Set<Tile> positions;
-				positions = gameState.gameService.getSpellRange(card);
+				positions = gameState.gameManager.getSpellRange(card);
 				for (Tile tile : positions) {
 					spells.add(new PossibleSpell(card, tile));
 					System.out.println("Adding spell " + card.getCardname() + " to list of possible spells");
@@ -642,7 +642,7 @@ public class AIPlayer extends Player {
 			System.out.println("AIPlayer mana: " + this.mana);
 			if (card.isCreature() && card.getManacost() <= this.mana) {
 				Set<Tile> positions;
-				positions = gameState.gameService.getValidSummonTiles();
+				positions = gameState.gameManager.getValidSummonTiles();
 				for (Tile tile : positions) {
 					if (!tile.isOccupied()) {
 						summons.add(new PossibleSummon(card, tile));
@@ -668,9 +668,9 @@ public class AIPlayer extends Player {
 			if (bestAttack == null || bestAttack.unit.hasAttacked()) {
 				return;
 			}
-			if (gameState.gameService.isAttackable(bestAttack.unit.getActiveTile(gameState.getBoard()), bestAttack.tile)) {
+			if (gameState.gameManager.isAttackable(bestAttack.unit.getActiveTile(gameState.getBoard()), bestAttack.tile)) {
 				System.out.println("Attacking unit on tile " + bestAttack.tile.getTilex() + ", " + bestAttack.tile.getTiley());
-				gameState.gameService.attack(bestAttack.unit, bestAttack.tile.getUnit());
+				gameState.gameManager.attack(bestAttack.unit, bestAttack.tile.getUnit());
 			}
 		}
 	}
@@ -692,7 +692,7 @@ public class AIPlayer extends Player {
 			// Check if the destination tile is unoccupied
 			if (!bestMove.tile.isOccupied()) {
 				// Perform the move
-				gameState.gameService.updateUnitPositionAndMove(bestMove.unit, bestMove.tile);
+				gameState.gameManager.updateUnitPositionAndMove(bestMove.unit, bestMove.tile);
 			}
 		}
 	}

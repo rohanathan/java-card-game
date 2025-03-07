@@ -21,11 +21,11 @@ public class CardAction {
   private void preAction() {
 
     // CLear all highlighted tiles
-    gameState.gameService.removeHighlightFromAll();
+    gameState.gameManager.removeHighlightFromAll();
 
     // Set the current card clicked to the card at the specified position in the
     // player's hand
-    gameState.gameService.highlightSelectedCard(handPosition);
+    gameState.gameManager.highlightSelectedCard(handPosition);
   }
 
   /**
@@ -38,7 +38,7 @@ public class CardAction {
 
     // Highlight the summon range of the current card clicked
     // Highlight the summon range of the current card clicked
-    gameState.gameService.highlightSummonRange();
+    gameState.gameManager.highlightSummonRange();
 
     // Push the current card clicked to the action history
     gameState.getActionHistory().push(currentCard);
@@ -57,7 +57,7 @@ public class CardAction {
 
     Card currentCard = gameState.getActiveCard();
     if (!currentCard.isCreature) {
-      gameState.gameService.highlightSpellRange(currentCard, gameState.getHuman());
+      gameState.gameManager.highlightSpellRange(currentCard, gameState.getHuman());
 
       // Push the current card clicked to the action history
       gameState.getActionHistory().push(currentCard);

@@ -81,13 +81,13 @@ public class TileClicked implements EventProcessor {
 	    if (gameState.getHuman().getMana() < card.getManacost()) {
 	        // Notify the player of insufficient mana
 	        BasicCommands.addPlayer1Notification(out, "Mana reserves depleted!", 2);
-	        gameState.gameService.removeHighlightFromAll();
-	        gameState.gameService.notClickingCard();
+	        gameState.gameManager.removeHighlightFromAll();
+	        gameState.gameManager.notClickingCard();
 	        return; // Exit the method early if mana is insufficient
 	    }
 
 	    // Call the method to remove the card from hand and cast the spell
-	    gameState.gameService.removeFromHandAndCast(gameState, card, tile);
+	    gameState.gameManager.removeFromHandAndCast(gameState, card, tile);
 
 
 	    // Remove highlight from all tiles
@@ -104,40 +104,40 @@ public class TileClicked implements EventProcessor {
 		// Early return if targetTile is null
 		if (targetTile == null) {
 			System.out.println("Target tile is null.");
-			gameState.gameService.removeHighlightFromAll();
+			gameState.gameManager.removeHighlightFromAll();
 			return;
 		}
 		AIPlayer ai = (AIPlayer) gameState.getAi();
 		if (ai.stunnedUnit==unit) {
 			System.out.println("Unit is stunned.");
 			unit.setHasMoved(true);
-			gameState.gameService.removeHighlightFromAll();
-			gameState.gameService.stunnedUnit(unit.getName());
+			gameState.gameManager.removeHighlightFromAll();
+			gameState.gameManager.stunnedUnit(unit.getName());
 			return;
 		}
 
 		if (unit == null) {
 			System.out.println("Unit is null.");
-			gameState.gameService.removeHighlightFromAll();
+			gameState.gameManager.removeHighlightFromAll();
 			return;
 		}
 
 		// Determine action based on tile's occupancy and highlight mode
 		if (!targetTile.isOccupied()) {
 			// Assuming all valid moves are already checked, directly move the unit
-			gameState.gameService.updateUnitPositionAndMove(unit, targetTile);
+			gameState.gameManager.updateUnitPositionAndMove(unit, targetTile);
 			System.out.println("Unit " + unit.getId() + " moved to " + targetTile.getTilex() + ", " + targetTile.getTiley());
 		} else if (targetTile.getHighlightMode() == 2) {
 			// Directly handle attack as validity should have been ensured beforehand
 			System.out.println("Attacking unit on tile " + targetTile.getTilex() + ", " + targetTile.getTiley());
 			Tile attackerTile = unit.getActiveTile(gameState.getBoard());
 
-			if (gameState.gameService.isAttackable(attackerTile, targetTile)) {
+			if (gameState.gameManager.isAttackable(attackerTile, targetTile)) {
 				// Attack adjacent unit
 				if (targetTile.isOccupied()) {
 					System.out.println("Target tile is occupied by " + targetTile.getUnit());
 				}
-				gameState.gameService.attack(unit, targetTile.getUnit());
+				gameState.gameManager.attack(unit, targetTile.getUnit());
 				unit.setHasAttacked(true);
 				unit.setHasMoved(true);
 			} else {
@@ -145,36 +145,36 @@ public class TileClicked implements EventProcessor {
 				if (targetTile.isOccupied()) {
 					System.out.println("Target tile is occupied by " + targetTile.getUnit() + " and is attacked by " + unit);
 				}
-				gameState.gameService.moveAndAttack(unit, targetTile.getUnit());
+				gameState.gameManager.moveAndAttack(unit, targetTile.getUnit());
 				unit.setHasAttacked(true);
 				unit.setHasMoved(true);
 			}
 
 			// Remove highlight from all tiles after action
-			gameState.gameService.removeHighlightFromAll();
+			gameState.gameManager.removeHighlightFromAll();
 		}
 	}
 
 	// Place unit card on board if tile is valid
 	private void handleCardSummoning(GameState gameState, Card card, Tile tile) {
-		if (gameState.gameService.isValidSummon(card, tile)) {
-			gameState.gameService.castCardFromHand(card, tile);
+		if (gameState.gameManager.isValidSummon(card, tile)) {
+			gameState.gameManager.castCardFromHand(card, tile);
 		} else {
-			gameState.gameService.removeHighlightFromAll();
+			gameState.gameManager.removeHighlightFromAll();
 		}
 	}
 
 	// Highlight valid moves and attacks for unit
 	private void highlightUnitActions(GameState gameState, Unit unit, Tile tile) {
 		// Clear all highlighted tiles
-		gameState.gameService.removeHighlightFromAll();
+		gameState.gameManager.removeHighlightFromAll();
 
 		// Highlight move and attack range based on unit's turn state
 		if (!unit.hasAttacked() && !unit.hasMoved()) {
-			gameState.gameService.highlightValidMoves(unit);
+			gameState.gameManager.highlightValidMoves(unit);
 		// Highlight attack range only, if unit has moved but not attacked
 		} else if (unit.hasMoved()) {
-			gameState.gameService.highlightAttackRange(unit);
+			gameState.gameManager.highlightAttackRange(unit);
 		}
 	}
 }

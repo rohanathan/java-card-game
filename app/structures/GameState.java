@@ -42,7 +42,7 @@ public class GameState {
 	private int totalUnits = 0;
 
 	// Entity objects that are part of the game state
-	public GameService gameService;
+	public GameManager gameManager;
 	private Player human;
 	private Player ai;
 	private Board board;
@@ -58,8 +58,8 @@ public class GameState {
 		
 		
 		
-		this.gameService = new GameService(out, this, playerService);
-		this.board = gameService.initializeBoard();
+		this.gameManager = new GameManager(out, this, playerService);
+		this.board = gameManager.initializeBoard();
 		
 		// Initialize PlayerService
 		this.playerService = playerService; 
@@ -80,9 +80,9 @@ public class GameState {
 		playerService.modifyPlayerMana(human, 2);
 
 		// Create the human and AI avatars
-		gameService.initializeAvatar(board, human);
-		gameService.initializeAvatar(board, ai);
-		// gameService.loadUnitsForTesting(ai);
+		gameManager.initializeAvatar(board, human);
+		gameManager.initializeAvatar(board, ai);
+		// gameManager.loadUnitsForTesting(ai);
 
 		// Set the current player to the human player
 		this.currentPlayer = human;
