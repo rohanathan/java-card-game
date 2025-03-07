@@ -1,4 +1,4 @@
-package structures.services;
+package structures.manager;
 
 import akka.actor.ActorRef;
 import commands.BasicCommands;
@@ -12,16 +12,16 @@ import structures.GameState;
 /**
  * Handles player-related functionalities, including health, mana, and card management.
  */
-public class PlayerService {
+public class PlayerManager {
     private final ActorRef out;
     private final GameState gameState;
 
     /**
-     * Constructor to initialize PlayerService with references to the Actor system and game state.
+     * Constructor to initialize PlayerManager with references to the Actor system and game state.
      * @param out The ActorRef used for communication.
      * @param gameState The current state of the game.
      */
-    public PlayerService(ActorRef out, GameState gameState) {
+    public PlayerManager(ActorRef out, GameState gameState) {
         this.out = out;
         // Store reference to GameState
         this.gameState = gameState; 

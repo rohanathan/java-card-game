@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import akka.actor.ActorRef;
 import structures.GameState;
-import structures.services.*;
+import structures.manager.*;
 /**
  * Indicates that both the core game loop in the browser is starting, meaning
  * that it is ready to recieve commands from the back-end.
@@ -22,11 +22,11 @@ public class Initalize implements EventProcessor {
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
 		gameState.gameInitalised = true;
-		// Create PlayerService instance
-		PlayerService playerService = new PlayerService(out, gameState); 
+		// Create PlayerManager instance
+		PlayerManager playerManager = new PlayerManager(out, gameState); 
 
 		// Initialise the game and pass services to GameState
-		gameState.init(out, playerService);
+		gameState.init(out, playerManager);
 
 	}
 

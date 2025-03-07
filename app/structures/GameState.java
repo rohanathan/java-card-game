@@ -8,8 +8,7 @@ import structures.basic.cards.Wraithling;
 import structures.basic.player.AIPlayer;
 import structures.basic.player.HumanPlayer;
 import structures.basic.player.Player;
-import structures.services.*;
-
+import structures.manager.*;
 
 import java.util.*;
 
@@ -26,7 +25,7 @@ public class GameState {
 	public boolean gameInitalised = false;
 
 	public boolean isGameOver = false;
-	private PlayerService playerService; // Add PlayerService reference
+	private PlayerManager playerManager; // Add PlayerManager reference
 
 	// Keep track of the player currently taking their turn
 	private Player currentPlayer;
@@ -54,15 +53,15 @@ public class GameState {
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerService playerService) {
+	public void init(ActorRef out, PlayerManager playerManager) {
 		
 		
 		
-		this.gameManager = new GameManager(out, this, playerService);
+		this.gameManager = new GameManager(out, this, playerManager);
 		this.board = gameManager.initializeBoard();
 		
-		// Initialize PlayerService
-		this.playerService = playerService; 
+		// Initialize playerManager
+		this.playerManager = playerManager; 
 
 
 		// Initialize stack of action history
@@ -73,11 +72,11 @@ public class GameState {
 		this.ai = new AIPlayer(this);
 
 		// Health initialised to 20
-		playerService.modifyPlayerHealth(human,20);
-		playerService.modifyPlayerHealth(ai,20);
+		playerManager.modifyPlayerHealth(human,20);
+		playerManager.modifyPlayerHealth(ai,20);
 
 		// Player mana initialised to 2
-		playerService.modifyPlayerMana(human, 2);
+		playerManager.modifyPlayerMana(human, 2);
 
 		// Create the human and AI avatars
 		gameManager.initializeAvatar(board, human);
@@ -88,8 +87,8 @@ public class GameState {
 		this.currentPlayer = human;
 
 		//Drawing initial 3 cards from the deck for the game start
-		playerService.drawCards(human,3);
-		playerService.drawCards(ai,3);
+		playerManager.drawCards(human,3);
+		playerManager.drawCards(ai,3);
 	}
 
 	// Switch the current player
@@ -108,9 +107,9 @@ public class GameState {
 	public void endTurn(){
 		handleCardManagement();
 		currentPlayer.incrementTurn();
-		this.playerService.modifyPlayerMana(currentPlayer, 0);
+		this.playerManager.modifyPlayerMana(currentPlayer, 0);
 		switchCurrentPlayer();
-		this.playerService.modifyPlayerMana(currentPlayer, currentPlayer.getTurn() + 1);
+		this.playerManager.modifyPlayerMana(currentPlayer, currentPlayer.getTurn() + 1);
 	}
 
 	
@@ -130,7 +129,7 @@ public class GameState {
 
 			} else {
 				// The hand is not full, draw a new card.
-				playerService.drawCards(currentPlayer, 1);
+				playerManager.drawCards(currentPlayer, 1);
 			}
 		}
 		catch (IllegalStateException e){

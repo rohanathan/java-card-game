@@ -7,9 +7,10 @@ import structures.basic.cards.*;
 import structures.basic.player.Hand;
 import structures.basic.player.HumanPlayer;
 import structures.basic.player.Player;
+import structures.manager.*;
 import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
-import structures.services.*;
+
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -36,12 +37,12 @@ public class GameManager {
 	
 	private final ActorRef out;
 	private final GameState gs;
-	private final PlayerService playerService;
+	private final PlayerManager playerManager;
 
-	public GameManager(ActorRef out, GameState gs, PlayerService playerService) {
+	public GameManager(ActorRef out, GameState gs, PlayerManager playerManager) {
 		this.out = out;
 		this.gs = gs;
-		this.playerService = playerService; // Initialize PlayerService
+		this.playerManager = playerManager; // Initialize PlayerManager
 
 	}
 
@@ -134,7 +135,7 @@ public class GameManager {
 		unit.setHealth(newHealth);
 		BasicCommands.setUnitHealth(out, unit, newHealth);
 		if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
-			playerService.modifyPlayerHealth(unit.getOwner(), newHealth);
+			playerManager.modifyPlayerHealth(unit.getOwner(), newHealth);
 		}
 	}
 
@@ -191,7 +192,7 @@ public class GameManager {
 
 
 		if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
-			playerService.modifyPlayerHealth(owner, 0);
+			playerManager.modifyPlayerHealth(owner, 0);
 		}
 
 	}
@@ -762,7 +763,7 @@ public class GameManager {
 		}
 
 		// update player mana
-		playerService.modifyPlayerMana(player, player.getMana() - card.getManacost());
+		playerManager.modifyPlayerMana(player, player.getMana() - card.getManacost());
 
 		// update the positions of the remaining cards if the player is human
 		if (player instanceof HumanPlayer) {
@@ -925,7 +926,7 @@ public class GameManager {
 			highlightSpellRange(card, gs.getCurrentPlayer());
 			BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlings", 5);
 			gs.getActionHistory().push(card);
-			playerService.modifyPlayerMana(gs.getCurrentPlayer(), gs.getCurrentPlayer().getMana() + card.getManacost());
+			playerManager.modifyPlayerMana(gs.getCurrentPlayer(), gs.getCurrentPlayer().getMana() + card.getManacost());
 		} else {
 			// Remove highlight from all tiles and update hand positions
 			BasicCommands.addPlayer1Notification(out, "All wraithlings summoned!", 5);
@@ -1002,7 +1003,7 @@ public class GameManager {
 	    
 	    // Decrease player's mana after casting the spell
 	    gameState.getHuman().setMana(player.getMana() - card.getManacost());
-	    playerService.modifyPlayerMana(player, player.getMana());
+	    playerManager.modifyPlayerMana(player, player.getMana());
 	}
 
 	// Ensure that the player has selected a valid tile for casting the spell
@@ -1027,7 +1028,7 @@ public class GameManager {
 				player.setWraithlingSwarmCounter(3);
 				// Decrease player's mana after casting the spell
 				gs.getHuman().setMana(player.getMana() - card.getManacost());
-				playerService.modifyPlayerMana(player, player.getMana());
+				playerManager.modifyPlayerMana(player, player.getMana());
 			}
 			return false;
 		}
