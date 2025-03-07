@@ -9,7 +9,7 @@ import structures.basic.player.HumanPlayer;
 import structures.basic.player.Player;
 import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
-
+import structures.services.*;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -36,40 +36,43 @@ public class GameService {
 	
 	private final ActorRef out;
 	private final GameState gs;
+	private final PlayerService playerService;
 
-	public GameService(ActorRef out, GameState gs) {
+	public GameService(ActorRef out, GameState gs, PlayerService playerService) {
 		this.out = out;
 		this.gs = gs;
+		this.playerService = playerService; // Initialize PlayerService
+
 	}
 
-	// Method to modify the health of a player
-	public void modifyPlayerHealth(Player player, int newHealth) {
-		// Set the new health value on the player object first
-		player.setHealth(newHealth);
+	// // Method to modify the health of a player
+	// public void modifyPlayerHealth(Player player, int newHealth) {
+	// 	// Set the new health value on the player object first
+	// 	player.setHealth(newHealth);
 
-		// Now modify the health on the frontend using the BasicCommands
-		if (player instanceof HumanPlayer) {
-			BasicCommands.setPlayer1Health(out, player);
-		} else {
-			BasicCommands.setPlayer2Health(out, player);
-		}
-		if (newHealth <= 0) {
-			gs.endGame(out);
-		}
-	}
+	// 	// Now modify the health on the frontend using the BasicCommands
+	// 	if (player instanceof HumanPlayer) {
+	// 		BasicCommands.setPlayer1Health(out, player);
+	// 	} else {
+	// 		BasicCommands.setPlayer2Health(out, player);
+	// 	}
+	// 	if (newHealth <= 0) {
+	// 		gs.endGame(out);
+	// 	}
+	// }
 
-	// Method to modify the mana of a player
-	public void modifyPlayerMana(Player player, int newMana) {
-		// Set the new mana value on the player object first
-		player.setMana(newMana);
+	// // Method to modify the mana of a player
+	// public void modifyPlayerMana(Player player, int newMana) {
+	// 	// Set the new mana value on the player object first
+	// 	player.setMana(newMana);
 
-		// Now modify the mana on the frontend using the BasicCommands
-		if (player instanceof HumanPlayer) {
-			BasicCommands.setPlayer1Mana(out, player);
-		} else {
-			BasicCommands.setPlayer2Mana(out, player);
-		}
-	}
+	// 	// Now modify the mana on the frontend using the BasicCommands
+	// 	if (player instanceof HumanPlayer) {
+	// 		BasicCommands.setPlayer1Mana(out, player);
+	// 	} else {
+	// 		BasicCommands.setPlayer2Mana(out, player);
+	// 	}
+	// }
 
 	// initial board setup
 	public Board initializeBoard() {
@@ -158,7 +161,7 @@ public class GameService {
 		unit.setHealth(newHealth);
 		BasicCommands.setUnitHealth(out, unit, newHealth);
 		if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
-			modifyPlayerHealth(unit.getOwner(), newHealth);
+			playerService.modifyPlayerHealth(unit.getOwner(), newHealth);
 		}
 	}
 
@@ -215,7 +218,7 @@ public class GameService {
 
 
 		if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
-			modifyPlayerHealth(owner, 0);
+			playerService.modifyPlayerHealth(owner, 0);
 		}
 
 	}
@@ -758,28 +761,28 @@ public class GameService {
 		return false; // Default to false
 	}
 
-	public void drawCards(Player player, int numberOfCards) {
-		if (player instanceof HumanPlayer) {
-			for (int i = 0; i < numberOfCards; i++) {
-				Card cardDrawn = player.drawCard();
-				if (cardDrawn == null) {
-					BasicCommands.addPlayer1Notification(out, "Card reserves depleted!", 2);
-					return;
-				}
-				int handPosition = player.getHand().getNumberOfCardsInHand();
-				BasicCommands.drawCard(out, cardDrawn, handPosition, 0);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			for (int i = 0; i < numberOfCards; i++) {
-				player.drawCard();
-			}
-		}
-	}
+	// public void drawCards(Player player, int numberOfCards) {
+	// 	if (player instanceof HumanPlayer) {
+	// 		for (int i = 0; i < numberOfCards; i++) {
+	// 			Card cardDrawn = player.drawCard();
+	// 			if (cardDrawn == null) {
+	// 				BasicCommands.addPlayer1Notification(out, "Card reserves depleted!", 2);
+	// 				return;
+	// 			}
+	// 			int handPosition = player.getHand().getNumberOfCardsInHand();
+	// 			BasicCommands.drawCard(out, cardDrawn, handPosition, 0);
+	// 			try {
+	// 				Thread.sleep(1000);
+	// 			} catch (InterruptedException e) {
+	// 				e.printStackTrace();
+	// 			}
+	// 		}
+	// 	} else {
+	// 		for (int i = 0; i < numberOfCards; i++) {
+	// 			player.drawCard();
+	// 		}
+	// 	}
+	// }
 
 
     // remove card from hand and summon unit
@@ -807,7 +810,7 @@ public class GameService {
 		}
 
 		// update player mana
-		modifyPlayerMana(player, player.getMana() - card.getManacost());
+		playerService.modifyPlayerMana(player, player.getMana() - card.getManacost());
 
 		// update the positions of the remaining cards if the player is human
 		if (player instanceof HumanPlayer) {
@@ -970,7 +973,7 @@ public class GameService {
 			highlightSpellRange(card, gs.getCurrentPlayer());
 			BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlings", 5);
 			gs.getActionHistory().push(card);
-			modifyPlayerMana(gs.getCurrentPlayer(), gs.getCurrentPlayer().getMana() + card.getManacost());
+			playerService.modifyPlayerMana(gs.getCurrentPlayer(), gs.getCurrentPlayer().getMana() + card.getManacost());
 		} else {
 			// Remove highlight from all tiles and update hand positions
 			BasicCommands.addPlayer1Notification(out, "All wraithlings summoned!", 5);
@@ -1047,7 +1050,7 @@ public class GameService {
 	    
 	    // Decrease player's mana after casting the spell
 	    gameState.getHuman().setMana(player.getMana() - card.getManacost());
-	    modifyPlayerMana(player, player.getMana());
+	    playerService.modifyPlayerMana(player, player.getMana());
 	}
 
 	// Ensure that the player has selected a valid tile for casting the spell
@@ -1072,7 +1075,7 @@ public class GameService {
 				player.setWraithlingSwarmCounter(3);
 				// Decrease player's mana after casting the spell
 				gs.getHuman().setMana(player.getMana() - card.getManacost());
-				modifyPlayerMana(player, player.getMana());
+				playerService.modifyPlayerMana(player, player.getMana());
 			}
 			return false;
 		}
