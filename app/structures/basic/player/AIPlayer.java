@@ -66,7 +66,7 @@ public class AIPlayer extends Player {
 		List<PossibleMovement> movements = new ArrayList<>();
 		for (Unit unit : this.units) {
 			if (!unit.hasMoved() && !unit.hasAttacked()) {
-				gameState.gameManager.getValidMoves(gameState.getBoard().getTiles(), unit).stream()
+				gameState.getBoardManager().getValidMoves(gameState.getBoard().getTiles(), unit).stream()
 						.filter(tile -> !tile.isOccupied())
 						.forEach(tile -> movements.add(new PossibleMovement(unit, tile)));
 			}
@@ -333,7 +333,7 @@ public class AIPlayer extends Player {
 		List<PossibleSpell> spells = new ArrayList<>();
 		for (Card card : this.hand.getCards()) {
 			if (!card.isCreature()) {
-				gameState.gameManager.getSpellRange(card).forEach(tile -> spells.add(new PossibleSpell(card, tile)));
+				gameState.getBoardManager().getSpellRange(card).forEach(tile -> spells.add(new PossibleSpell(card, tile)));
 			}
 		}
 		return spells;
@@ -343,7 +343,7 @@ public class AIPlayer extends Player {
 		List<PossibleSummon> summons = new ArrayList<>();
 		for (Card card : this.hand.getCards()) {
 			if (card.isCreature() && card.getManacost() <= this.mana) {
-				gameState.gameManager.getValidSummonTiles().stream()
+				gameState.getBoardManager().getValidSummonTiles().stream()
 						.filter(tile -> !tile.isOccupied())
 						.forEach(tile -> summons.add(new PossibleSummon(card, tile)));
 			}
@@ -374,7 +374,7 @@ public class AIPlayer extends Player {
 			if (bestMove == null || bestMove.unit.hasMoved() || bestMove.unit.hasAttacked()) return;
 
 			if (!bestMove.tile.isOccupied()) {
-				gameState.gameManager.updateUnitPositionAndMove(bestMove.unit, bestMove.tile);
+				gameState.getBoardManager().updateUnitPositionAndMove(bestMove.unit, bestMove.tile);
 			}
 		}
 	}
