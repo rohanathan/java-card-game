@@ -39,107 +39,90 @@ public class GameManager {
 	private final GameState gs;
 	private final PlayerManager playerManager;
 	private final BoardManager boardManager;
+	private final CombatHandler combatHandler;
 
-	public GameManager(ActorRef out, GameState gs, PlayerManager playerManager,BoardManager boardManager) {
+	public GameManager(ActorRef out, GameState gs, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler) {
 		this.out = out;
 		this.gs = gs;
 		this.playerManager = playerManager; // Initialize PlayerManager
 		this.boardManager=boardManager;
+		this.combatHandler=combatHandler;
 
 	}
 
 	
 
-	// initial board setup
-	// public Board initializeBoard() {
-	// 	Board board = new Board();
-	// 	for (int i = 0; i < 9; i++) {
-	// 		for (int j = 0; j < 5; j++) {
-	// 			Tile tile = BasicObjectBuilders.loadTile(i, j);
-	// 			tile.setHighlightMode(0);
-	// 			board.setTile(tile, i, j);
-	// 			BasicCommands.drawTile(out, tile, 0);
-	// 			try {
-	// 				Thread.sleep(5);
-	// 			} catch (InterruptedException e) {
-	// 				e.printStackTrace();
-	// 			}
-	// 		}
+	// // initial player setup
+	// public void initializeAvatar(Board board, Player player) {
+	// 	// check if player is human or AI
+	// 	Tile avatarTile;
+	// 	Unit avatar;
+	// 	if (player instanceof HumanPlayer) {
+	// 		avatarTile = board.getTile(1, 2);
+	// 		avatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, 0, Unit.class);
+	// 		avatar.setName("Player Avatar");
+
+	// 	} else {
+	// 		avatarTile = board.getTile(7, 2);
+	// 		avatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, 1, Unit.class);
+	// 		avatar.setName("AI Avatar");
 	// 	}
-	// 	return board;
+	// 	avatar.setPositionByTile(avatarTile);
+	// 	avatarTile.setUnit(avatar);
+	// 	BasicCommands.drawUnit(out, avatar, avatarTile);
+	// 	avatar.setOwner(player);
+	// 	player.setAvatar(avatar);
+	// 	player.addUnit(avatar);
+	// 	gs.addToTotalUnits(1);
+	// 	modifyUnitHealth(avatar, 20);
+	// 	updateUnitAttack(avatar, 2);
+	// 	avatar.setHealth(20);
+	// 	avatar.setMaxHealth(20);
+	// 	avatar.setAttack(2);
+	// 	try {
+	// 		Thread.sleep(30);
+	// 	} catch (InterruptedException e) {
+	// 		e.printStackTrace();
+	// 	}
+	// 	BasicCommands.setUnitHealth(out, avatar, 20);
+	// 	try {
+	// 		Thread.sleep(30);
+	// 	} catch (InterruptedException e) {
+	// 		e.printStackTrace();
+	// 	}
+	// 	BasicCommands.setUnitAttack(out, avatar, 2);
 	// }
 
-	// initial player setup
-	public void initializeAvatar(Board board, Player player) {
-		// check if player is human or AI
-		Tile avatarTile;
-		Unit avatar;
-		if (player instanceof HumanPlayer) {
-			avatarTile = board.getTile(1, 2);
-			avatar = BasicObjectBuilders.loadUnit(StaticConfFiles.humanAvatar, 0, Unit.class);
-			avatar.setName("Player Avatar");
+	// // Method to update the health of a unit on the board
+	// public void modifyUnitHealth(Unit unit, int newHealth) {
 
-		} else {
-			avatarTile = board.getTile(7, 2);
-			avatar = BasicObjectBuilders.loadUnit(StaticConfFiles.aiAvatar, 1, Unit.class);
-			avatar.setName("AI Avatar");
-		}
-		avatar.setPositionByTile(avatarTile);
-		avatarTile.setUnit(avatar);
-		BasicCommands.drawUnit(out, avatar, avatarTile);
-		avatar.setOwner(player);
-		player.setAvatar(avatar);
-		player.addUnit(avatar);
-		gs.addToTotalUnits(1);
-		modifyUnitHealth(avatar, 20);
-		updateUnitAttack(avatar, 2);
-		avatar.setHealth(20);
-		avatar.setMaxHealth(20);
-		avatar.setAttack(2);
-		try {
-			Thread.sleep(30);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		BasicCommands.setUnitHealth(out, avatar, 20);
-		try {
-			Thread.sleep(30);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		BasicCommands.setUnitAttack(out, avatar, 2);
-	}
+	// 	if (newHealth > 20) {
+	// 		newHealth = 20;
+	// 	} else if (newHealth < 0) {
+	// 		newHealth = 0;
+	// 	}
 
-	// Method to update the health of a unit on the board
-	public void modifyUnitHealth(Unit unit, int newHealth) {
+	// 	if (unit.getName().equals("Player Avatar") &&
+	// 			unit.getHealth() > newHealth && gs.getHuman().getRobustness() > 0){
+	// 		gs.getHuman().setRobustness(gs.getHuman().getRobustness()-1);
+	// 	    BasicCommands.addPlayer1Notification(out, "Avatar robustness left: " + gs.getHuman().getRobustness(), 4);
 
-		if (newHealth > 20) {
-			newHealth = 20;
-		} else if (newHealth < 0) {
-			newHealth = 0;
-		}
-
-		if (unit.getName().equals("Player Avatar") &&
-				unit.getHealth() > newHealth && gs.getHuman().getRobustness() > 0){
-			gs.getHuman().setRobustness(gs.getHuman().getRobustness()-1);
-		    BasicCommands.addPlayer1Notification(out, "Avatar robustness left: " + gs.getHuman().getRobustness(), 4);
-
-		}
+	// 	}
 		
-		try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
-		if (newHealth == 0) {
-			destroyUnit(unit);
-			return;
-		}
-		if (unit.getHealth() > newHealth && unit.getName().equals("AI Avatar")) {
-			zeal();
-		}
-		unit.setHealth(newHealth);
-		BasicCommands.setUnitHealth(out, unit, newHealth);
-		if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
-			playerManager.modifyPlayerHealth(unit.getOwner(), newHealth);
-		}
-	}
+	// 	try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
+	// 	if (newHealth == 0) {
+	// 		destroyUnit(unit);
+	// 		return;
+	// 	}
+	// 	if (unit.getHealth() > newHealth && unit.getName().equals("AI Avatar")) {
+	// 		zeal();
+	// 	}
+	// 	unit.setHealth(newHealth);
+	// 	BasicCommands.setUnitHealth(out, unit, newHealth);
+	// 	if (unit.getName().equals("Player Avatar") || unit.getName().equals("AI Avatar")) {
+	// 		playerManager.modifyPlayerHealth(unit.getOwner(), newHealth);
+	// 	}
+	// }
 
 	// Update a unit's attack on the board
 	public void updateUnitAttack(Unit unit, int newAttack) {
@@ -199,75 +182,12 @@ public class GameManager {
 
 	}
 
-	// // remove highlight from all tiles
-	// public void removeHighlightFromAll() {
-	// 	Board board = gs.getBoard();
-	// 	Tile[][] tiles = board.getTiles();
-	// 	for (int i = 0; i < 9; i++) {
-	// 		for (int j = 0; j < 5; j++) {
-	// 			if (tiles[i][j].getHighlightMode() != 0) {
-	// 				Tile currentTile = tiles[i][j];
-	// 				currentTile.setHighlightMode(0);
-	// 				BasicCommands.drawTile(out, currentTile, 0);
-	// 			}
-	// 		}
-	// 	}
-	// 	if (!gs.getHuman().getHand().getCards().isEmpty()) {
-	// 		notClickingCard();
-	// 	}
-	// }
-
-
-	// Move to the closest adjacent unit to defender, and call adjacent attack
-	public void moveAndAttack(Unit attacker, Unit attacked) {
-		// Retrieve the tiles of the board and the valid movement tiles for the attacker
-		Tile[][] tiles = gs.getBoard().getTiles();
-		Set<Tile> validMoveTiles = boardManager.getValidMoves(tiles, attacker);
-		Tile defenderTile = attacked.getActiveTile(gs.getBoard());
-
-		// Initialize variables to keep track of the closest tile and its distance
-		Tile closestTile = null;
-		double closestDistance = Double.MAX_VALUE;
-
-		// Iterate over each valid movement tile
-		for (Tile tile : validMoveTiles) {
-			// Ensure the tile is not occupied
-			if (!tile.isOccupied()) {
-				// Calculate the distance to the defender's tile
-				double distance = Math.sqrt(Math.pow(tile.getTilex() - defenderTile.getTilex(), 2) + Math.pow(tile.getTiley() - defenderTile.getTiley(), 2));
-				// If this tile is closer than any previously examined tile, update closestTile and closestDistance
-				if (distance < closestDistance) {
-					closestTile = tile;
-					closestDistance = distance;
-				}
-			}
-		}
-
-		// If a closest tile has been found, move the attacker to this tile
-		if (closestTile != null) {
-			boardManager.updateUnitPositionAndMove(attacker, closestTile);
-			// Ensure a small delay to let the move action complete before attacking
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// After moving, perform the attack if the attacker is now adjacent to the defender
-		if (isAttackable(attacker.getActiveTile(gs.getBoard()), defenderTile)) {
-			System.out.println("Combat initiated! Attacker strikes from an adjacent position!");
-			attack(attacker, attacked);
-		} else {
-			System.out.println("Attack failed—target is out of range!");
-		}
-	}
 
 	// // Highlight tiles for movement and attack
 	public void highlightValidMoves(Unit unit) {
 	    Tile[][] tiles = gs.getBoard().getTiles();
 	    Set<Tile> validMoveTiles = boardManager.getValidMoves(tiles, unit);
-	    Set<Tile> validAttackTiles = findAttackTargets(unit);
+	    Set<Tile> validAttackTiles = gs.getCombatHandler().findAttackTargets(unit);
 
 	    // Highlight valid movement and attack tiles
 	    if (validMoveTiles != null) {
@@ -290,137 +210,12 @@ public class GameManager {
 	    }
 	}
 
-	// // Method to highlight adjacent tiles for attack
-	// private void highlightAdjacentAttackTiles(Tile tile, Unit unit) {
-	// 	Board board = gs.getBoard();
-	// 	int x = tile.getTilex();
-	// 	int y = tile.getTiley();
-
-	// 	int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
-	// 	for (int[] direction : directions) {
-	// 		int newX = x + direction[0];
-	// 		int newY = y + direction[1];
-	// 		if (isValidTile(newX, newY) && board.getTile(newX, newY).isOccupied() && board.getTile(newX, newY).getUnit().getOwner() != unit.getOwner()) {
-	// 			boardManager.updateTileHighlight(board.getTile(newX, newY), 2); // Highlight tile for attack
-	// 		}
-	// 	}
-	// }
-
-	// // Method to calculate and return the set of valid actions (tiles) for a given unit
-	// public Set<Tile> getValidMoves(Tile[][] board, Unit unit) {
-		
-	// 	Set<Tile> validTiles = new HashSet<>();
-
-	// 	// Skip calculation if unit is provoked or has moved/attacked this turn
-	// 	if (checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
-	// 		return validTiles;
-	// 	}
-
-	// 	if (unit.getName().equals("Young Flamewing")) {
-	// 		return gs.getBoard().getAllUnoccupiedTiles(board);
-	// 	}
-
-	// 	Player currentPlayer = unit.getOwner();
-	// 	int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-	// 	int[][] extendedDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-1, -1}, {1, 1}, {-1, 1}, {1, -1}};
-
-	// 	// Handle immediate adjacent tiles (including diagonals)
-	// 	for (int[] direction : directions) {
-	// 		addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
-	// 	}
-
-	// 	// Handle two tiles away horizontally or vertically, making sure not to pass through enemy units
-	// 	for (int[] direction : extendedDirections) {
-	// 		addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
-	// 	}
-
-	// 	return validTiles;
-	// }
-
-	// 
 	
-	
-
-	// private boolean isEnemyOnTile(Tile tile, Player currentPlayer) {
-	// 	return tile.isOccupied() && tile.getUnit().getOwner() != currentPlayer;
-	// }
-
-	// // Checks if a tile position is within the boundaries of the game board
-	// private boolean isValidTile(int x, int y) {
-	// 	Tile[][] board = gs.getBoard().getTiles();
-	// 	return x >= 0 && y >= 0 && x < board.length && y < board[x].length;
-	// }
-
-	// Checks if provoke unit is present on the board and around the tile on which an alleged enemy unit (target) is located
-	public Set<Position> checkProvoker(Tile tile) {
-		Set<Position> provokers = new HashSet<>();
-
-		for (Unit unit : gs.getInactivePlayer().getUnits()) {
-			int tilex = tile.getTilex();
-			int tiley = tile.getTiley();
-
-			if (Math.abs(tilex - unit.getPosition().getTilex()) < 2 && Math.abs(tiley - unit.getPosition().getTiley()) < 2) {
-				if (unit.getName().equals("Rock Pulveriser") || unit.getName().equals("Swamp Entangler") ||
-						unit.getName().equals("Silverguard Knight") || unit.getName().equals("Ironcliff Guardian")) {
-					System.out.println("Provoker " + unit.getName() + " in the house.");
-					provokers.add(unit.getPosition());
-				}
-			}
-		}
-		return provokers;
-	}
-
-	// Returns true if the unit should be provoked based on adjacent opponents
-	public boolean checkProvoked(Unit unit) {
-		
-		Player opponent = (gs.getCurrentPlayer() == gs.getHuman()) ? gs.getAi() : gs.getHuman();
-		// Iterate over the opponent's units to check for adjacency and provoking units
-		for (Unit other : opponent.getUnits()) {
-
-			// Calculate the distance between the units
-			int unitx = unit.getPosition().getTilex();
-			int unity = unit.getPosition().getTiley();
-
-			// Check if the opponent unit's name matches any provoking unit
-			if (other.getName().equals("Rock Pulveriser") || other.getName().equals("Swamp Entangler") ||
-					other.getName().equals("Silverguard Knight") || other.getName().equals("Ironcliff Guardian")) {
-
-
-				// Check if the opponent unit is adjacent to the current unit
-				if (Math.abs(unitx - other.getPosition().getTilex()) <= 1 && Math.abs(unity - other.getPosition().getTiley()) <= 1) {
-					BasicCommands.addPlayer1Notification(out, unit.getName() + " has been provoked!", 2);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	// // Highlight tiles for attacking only
-	public void highlightAttackRange(Unit unit) {
-		Set<Tile> validAttackTiles = findAttackTargets(unit);
-
-		// Highlight valid attack tiles
-		validAttackTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 2)); // 2 for attack highlight mode
-	}
-
-	// Calculate and return the set of valid attack targets for a given unit
-	public Set<Tile> findAttackTargets(Unit unit) {
-		Set<Tile> validAttacks = new HashSet<>();
-		Player opponent = gs.getInactivePlayer();
-
-		// Default target determination
-		if (!unit.hasAttacked()) {
-			validAttacks.addAll(getValidTargets(unit, opponent));
-		}
-
-		return validAttacks;
-	}
 
 	// Returns the set of valid attack targets for a given unit
 	public Set<Tile> getValidTargets(Unit unit, Player opponent) {
 		Set<Tile> validAttacks = new HashSet<>();
-		Set<Position> provokers = checkProvoker(unit.getActiveTile(gs.getBoard()));
+		Set<Position> provokers = gs.getCombatHandler().checkProvoker(unit.getActiveTile(gs.getBoard()));
 		Tile unitTile = unit.getActiveTile(gs.getBoard());
 
 		// Attack adjacent units if there are any
@@ -448,59 +243,7 @@ public class GameManager {
 		return dx < 2 && dy < 2;
 	}
 
-	// Attack an enemy unit and play the attack animation
-	public void attack(Unit attacker, Unit attacked) {
-		if (!attacker.hasAttacked()) {
-			// remove highlight from all tiles
-			boardManager.updateTileHighlight(attacked.getActiveTile(gs.getBoard()), 2);
-			BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.attack);
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			BasicCommands.playUnitAnimation(out, attacked, UnitAnimationType.hit);
-			try {
-				Thread.sleep(750);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.idle);
-			BasicCommands.playUnitAnimation(out, attacked, UnitAnimationType.idle);
-
-			// update health
-			modifyUnitHealth(attacked, attacked.getHealth() - attacker.getAttack());
-			if (attacker.getAttack() >= 0 && attacker.equals(gs.getHuman().getAvatar()) 
-					&& gs.getHuman().getRobustness() > 0) {
- 
-					Wraithling.summonAvatarWraithling(out, gs);
-				}
-			boardManager.removeHighlightFromAll();
-
-				
-			}
-
-			// Only counter attack if the attacker is the current player
-			// To avoid infinitely recursive counter attacking
-			if (attacker.getOwner() == gs.getCurrentPlayer()) {
-				counterAttack(attacker, attacked);
-			}
-
-			attacker.setHasAttacked(true);
-			attacker.setHasMoved(true);
-		}
-	
-
-	// Counter attack an enemy unit and play the attack animation
-	public void counterAttack(Unit originalAttacker, Unit counterAttacker) {
-		if (counterAttacker.getHealth() > 0) {
-			System.out.println("Counter attacking");
-			attack(counterAttacker, originalAttacker);
-			counterAttacker.setHasAttacked(false);
-			counterAttacker.setHasMoved(false);
-		}
-	}	
+		
 
 	// // highlight tiles for summoning units (does not currently take into account special units)
 	public void highlightSpellRange(Card card, Player player) {
@@ -531,88 +274,7 @@ public class GameManager {
 		System.out.println("Highlighting spellrange " + card.getCardname());
 	}
 
-	// // highlight tiles for summoning units
-	// public void highlightSummonRange() {
-	// 	Set<Tile> validTiles = boardManager.getValidSummonTiles();
-	// 	validTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 1));
-	// }
-
-	// // Returns the set of valid tiles for summoning units
-	// public Set<Tile> getValidSummonTiles() {
-	// 	Player player = gs.getCurrentPlayer();
-	// 	Set<Tile> validTiles = new HashSet<>();
-	// 	Tile[][] tiles = gs.getBoard().getTiles();
-	// 	for (int i = 0; i < tiles.length; i++) {
-	// 		for (int j = 0; j < tiles[i].length; j++) {
-	// 			Tile currentTile = tiles[i][j];
-	// 			if (isAdjacentToAlly(i, j, player) && !currentTile.isOccupied()) {
-	// 				validTiles.add(currentTile);
-	// 			}
-	// 		}
-	// 	}
-	// 	return validTiles;
-	// }
 	
-	//Check for spell range 
-	// // Check for spell range 
-	// public Set<Tile> getSpellRange(Card card) {
-	//     Set<Tile> validTiles = new HashSet<>();
-	//     Tile[][] tiles = gs.getBoard().getTiles();
-
-	//     if (card.getCardname().equals("Dark Terminus")) {
-	//         for (int i = 0; i < tiles.length; i++) {
-	//             for (int j = 0; j < tiles[i].length; j++) {
-	//                 Tile currentTile = tiles[i][j];
-	//                 Unit unit = currentTile.getUnit();
-	                
-	//                 // Check if the tile is adjacent to a friendly unit and not occupied
-	//                 if (unit != null && !(unit.getOwner() instanceof HumanPlayer) && !unit.getName().equals("AI Avatar")) {
-	//                     validTiles.add(currentTile);
-	//                 }
-	//             }
-	//         }
-	//     }
-	    
-	//     if (card.getCardname().equals("Wraithling Swarm")) {
-	//     		return boardManager.getValidSummonTiles();
-	//     }
-	    
-	//     if (card.getCardname().equals("Beamshock")) {
-	//     	List<Unit> humanUnits = gs.getHuman().getUnits();
-	// 		Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
-	// 		validTiles.add(u.getActiveTile(gs.getBoard()));
-    //     }
-	//     if (card.getCardname().equals("Truestrike")) {
-    // 		validTiles.add(gs.getHuman().getAvatar().getActiveTile(gs.getBoard()));
-    //     }
-	//     if (card.getCardname().equals("Sundrop Elixir")) {
-	//     	//could potentially change for different units as well
-    // 		validTiles.add(gs.getAi().getAvatar().getActiveTile(gs.getBoard()));
-    //     }
-	    
-	//     return validTiles;
-	// }
-
-
-
-	// // Check if a tile is adjacent to a friendly unit of the specified player
-	// private boolean isAdjacentToAlly(int x, int y, Player player) {
-	// 	Tile[][] tiles = gs.getBoard().getTiles();
-	// 	for (int dx = -1; dx <= 1; dx++) {
-	// 		for (int dy = -1; dy <= 1; dy++) {
-	// 			if (dx == 0 && dy == 0) continue; // Skip the current tile
-	// 			int adjX = x + dx;
-	// 			int adjY = y + dy;
-	// 			if (isValidTile(adjX, adjY)) {
-	// 				Tile adjTile = tiles[adjX][adjY];
-	// 				if (adjTile.isOccupied() && adjTile.getUnit().getOwner() == player) {
-	// 					return true;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	return false;
-	// }
 
 	// check if summoning is valid
 	public boolean isValidSummon(Card card, Tile tile) {
@@ -622,80 +284,7 @@ public class GameManager {
 		return tile.getHighlightMode() == 1;
 	}
 
-	// // helper method to update tile highlight
-	// public void updateTileHighlight(Tile tile, int tileHighlightMode) {
-	// 	try {
-	// 		Thread.sleep(20);
-	// 	} catch (InterruptedException e) {
-	// 		e.printStackTrace();
-	// 	}
-
-	// 	tile.setHighlightMode(tileHighlightMode);
-	// 	BasicCommands.drawTile(out, tile, tileHighlightMode);
-	// }
-
-	// // Method to actually move the unit to the new tile
-	// public void updateUnitPositionAndMove(Unit unit, Tile newTile) {
-	// 	if (newTile.getHighlightMode() != 1 && gs.getCurrentPlayer() instanceof HumanPlayer) {
-	// 		System.out.println("New tile is not highlighted for movement");
-	// 		boardManager.removeHighlightFromAll();
-	// 		return;
-	// 	}
-
-	// 	Board board = gs.getBoard();
-
-	// 	// get current tile
-	// 	Tile currentTile = unit.getActiveTile(board);
-
-	// 	// update unit position
-	// 	currentTile.removeUnit();
-	// 	newTile.setUnit(unit);
-	// 	unit.setPositionByTile(newTile);
-
-	// 	// remove highlight from all tiles
-	// 	boardManager.removeHighlightFromAll();
-
-	// 	try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
-
-	// 	// Move unit to tile according to the result of yFirst
-	// 	BasicCommands.moveUnitToTile(out, unit, newTile, yFirst(currentTile, newTile, unit));
-
-	// 	if (unit.getName().equals("Young Flamewing")) {
-	// 		BasicCommands.addPlayer1Notification(out, "Flamewing is flying!", 3);
-	// 	}
-
-	// 	try {
-	// 		Thread.sleep(2000);
-	// 	} catch (InterruptedException e) {
-	// 		e.printStackTrace();
-	// 	}
-
-	// 	unit.setHasMoved(true);
-	// }
-
-	// Method to determine whether to move in the x or y direction first
-	// private boolean yFirst(Tile currentTile, Tile newTile, Unit unit) {
-	// 	Board board = gs.getBoard();
-	// 	int dx = newTile.getTilex() - currentTile.getTilex();
-	// 	int dy = newTile.getTiley() - currentTile.getTiley();
-
-	// 	if (Math.abs(dx) == 1 && Math.abs(dy) == 1) {
-	// 		// Check for enemies along the path when moving x then y and y then x
-	// 		Tile xFirstTile = board.getTile(currentTile.getTilex() + dx, currentTile.getTiley());
-	// 		Tile yFirstTile = board.getTile(currentTile.getTilex(), currentTile.getTiley() + dy);
-
-	// 		boolean xFirstBlocked = xFirstTile.isOccupied() && xFirstTile.getUnit().getOwner() != unit.getOwner();
-	// 		boolean yFirstBlocked = yFirstTile.isOccupied() && yFirstTile.getUnit().getOwner() != unit.getOwner();
-
-	// 		// If the path is blocked in the x direction, try y first, and vice versa.
-	// 		if (xFirstBlocked && !yFirstBlocked) {
-	// 			return true; // Prioritize y if x is blocked.
-	// 		} else if (!xFirstBlocked && yFirstBlocked) {
-	// 			return false; // Prioritize x if y is blocked.
-	// 		}
-	// 	}
-	// 	return false; // Default to false
-	// }
+	
 
 
 

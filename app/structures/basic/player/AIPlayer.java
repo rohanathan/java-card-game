@@ -78,7 +78,7 @@ public class AIPlayer extends Player {
 		List<PossibleAttack> attacks = new ArrayList<>();
 		for (Unit unit : this.units) {
 			if (!unit.hasAttacked()) {
-				gameState.gameManager.findAttackTargets(unit).forEach(tile -> attacks.add(new PossibleAttack(unit, tile)));
+				gameState.getCombatHandler().findAttackTargets(unit).forEach(tile -> attacks.add(new PossibleAttack(unit, tile)));
 			}
 		}
 		return attacks;
@@ -359,8 +359,8 @@ public class AIPlayer extends Player {
 			PossibleAttack bestAttack = findBestAttack(rankAttacks(attacks));
 			if (bestAttack == null || bestAttack.unit.hasAttacked()) return;
 
-			if (gameState.gameManager.isAttackable(bestAttack.unit.getActiveTile(gameState.getBoard()), bestAttack.tile)) {
-				gameState.gameManager.attack(bestAttack.unit, bestAttack.tile.getUnit());
+			if (gameState.getCombatHandler().isAttackable(bestAttack.unit.getActiveTile(gameState.getBoard()), bestAttack.tile)) {
+				gameState.getCombatHandler().attack(bestAttack.unit, bestAttack.tile.getUnit());
 			}
 		}
 	}

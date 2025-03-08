@@ -158,7 +158,7 @@ public class BoardManager {
 		Set<Tile> validTiles = new HashSet<>();
 
 		// Skip calculation if unit is provoked or has moved/attacked this turn
-		if (gameState.gameManager.checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
+		if (gameState.getCombatHandler().checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
 			return validTiles;
 		}
 

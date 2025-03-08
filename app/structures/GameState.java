@@ -27,6 +27,8 @@ public class GameState {
 	public boolean isGameOver = false;
 	private PlayerManager playerManager; // Add PlayerManager reference
 	private BoardManager boardManager;
+	private CombatHandler combatHandler;
+	private UnitManager unitManager;
 	// Keep track of the player currently taking their turn
 	private Player currentPlayer;
 
@@ -53,12 +55,14 @@ public class GameState {
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager) {
+	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler,UnitManager unitManager) {
 		
 		
 		
-		this.gameManager = new GameManager(out, this, playerManager,boardManager);
+		this.gameManager = new GameManager(out, this, playerManager,boardManager,combatHandler);
 		this.boardManager=boardManager;
+		this.combatHandler=combatHandler;
+		 this.unitManager=unitManager;
 		this.board = boardManager.initializeBoard();
 		
 		// Initialize playerManager
@@ -80,8 +84,8 @@ public class GameState {
 		playerManager.modifyPlayerMana(human, 2);
 
 		// Create the human and AI avatars
-		gameManager.initializeAvatar(board, human);
-		gameManager.initializeAvatar(board, ai);
+		unitManager.initializeAvatar(board, human);
+		unitManager.initializeAvatar(board, ai);
 		// gameManager.loadUnitsForTesting(ai);
 
 		// Set the current player to the human player
@@ -230,9 +234,16 @@ public class GameState {
 		}
 	}
 
+	public PlayerManager getPlayerManager() {
+		return playerManager;
+	}
+
 	//Accesing the Board Manager
 	public BoardManager getBoardManager() {
 		return boardManager;
+	}
+	public CombatHandler getCombatHandler() {
+		return combatHandler;
 	}
 	
 }
