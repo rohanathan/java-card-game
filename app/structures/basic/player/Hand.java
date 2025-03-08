@@ -13,7 +13,6 @@ public class Hand {
 
 	public Hand() {
         this.cards = new ArrayList<>();
-        
     }
 
     public void addCard(Card drawnCard) {
@@ -60,8 +59,7 @@ public class Hand {
     public List<Card> getCards() {
         return cards;
     }
-    
-   
+
 
 }
 

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.checkerframework.checker.units.qual.A;
 import structures.GameState;
+import structures.basic.Tile;
 import structures.basic.Unit;
 import structures.basic.player.AIPlayer;
 
@@ -16,8 +17,11 @@ public class BeamShock {
 		// Use streams to find the unit with the highest attack value
 		Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
 		AIPlayer ai = (AIPlayer) gs.getAi();
-		ai.stunnedUnit = u;
-		gs.gameManager.stunning(u.getActiveTile(gs.getBoard()));
+		ai.getAiManager().setStunnedUnit(u);
+		Tile activeTile = u.getActiveTile(gs.getBoard());
+		if (activeTile != null) {
+			gs.gameManager.stunning(activeTile);
+		}
 		
 	}
 }
