@@ -39,7 +39,7 @@ public class AIMoveHandler {
         List<PossibleAttack> attacks = new ArrayList<>();
         for (Unit unit : aiPlayer.getUnits()) {
             if (!unit.hasAttacked()) {
-                for (Tile target : gameState.gameManager.findAttackTargets(unit)) {
+                for (Tile target : gameState.getCombatHandler().findAttackTargets(unit)) {
                     attacks.add(new PossibleAttack(unit, target));
                 }
             }
@@ -51,7 +51,7 @@ public class AIMoveHandler {
         List<PossibleMovement> moves = new ArrayList<>();
         for (Unit unit : aiPlayer.getUnits()) {
             if (!unit.hasMoved()) {
-                for (Tile tile : gameState.gameManager.getValidMoves(gameState.getBoard().getTiles(), unit)) {
+                for (Tile tile : gameState.getBoardManager().getValidMoves(gameState.getBoard().getTiles(), unit)) {
                     if (!tile.isOccupied()) {
                         moves.add(new PossibleMovement(unit, tile));
                     }
@@ -110,12 +110,12 @@ public class AIMoveHandler {
     }
 
     private void executeAttack(PossibleAttack attack) {
-        gameState.gameManager.attack(attack.unit, attack.tile.getUnit());
+        gameState.getCombatHandler().attack(attack.unit, attack.tile.getUnit());
         attack.unit.setHasAttacked(true);
     }
 
     private void executeMovement(PossibleMovement move) {
-        gameState.gameManager.updateUnitPositionAndMove(move.unit, move.tile);
+        gameState.getBoardManager().updateUnitPositionAndMove(move.unit, move.tile);
         move.unit.setHasMoved(true);
     }
 

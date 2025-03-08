@@ -57,7 +57,7 @@ public class CardAction {
 
     Card currentCard = gameState.getActiveCard();
     if (!currentCard.isCreature) {
-      gameState.gameManager.highlightSpellRange(currentCard, gameState.getHuman());
+      gameState.getAbilityHandler().highlightSpellRange(currentCard, gameState.getHuman());
 
       // Push the current card clicked to the action history
       gameState.getActionHistory().push(currentCard);

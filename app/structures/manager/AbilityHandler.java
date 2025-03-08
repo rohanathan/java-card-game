@@ -82,19 +82,19 @@ public class AbilityHandler {
     // Number of WraithlingameState to summon
     Wraithling.summonWraithlingToTile(tile, out, gameState);
     HumanPlayer player = (HumanPlayer) gameState.getHuman();
-    player.setWraithlingameStatewarmCounter(player.getWraithlingameStatewarmCounter() - 1);
+    player.setWraithlingSwarmCounter(player.getWraithlingSwarmCounter() - 1);
 
     // If there are more WraithlingameState to summon, push the card to action history
-    if (player.getWraithlingameStatewarmCounter() > 0) {
+    if (player.getWraithlingSwarmCounter() > 0) {
         // Highlight tiles for summoning
         highlightSpellRange(card, gameState.getCurrentPlayer());
-        BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingameStatewarmCounter() +" more wraithlingameState", 5);
+        BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlingameState", 5);
         gameState.getActionHistory().push(card);
-        gameState.getBoardManager().modifyPlayerMana(gameState.getCurrentPlayer(), gameState.getCurrentPlayer().getMana() + card.getManacost());
+        gameState.getPlayerManager().modifyPlayerMana(gameState.getCurrentPlayer(), gameState.getCurrentPlayer().getMana() + card.getManacost());
     } else {
         // Remove highlight from all tiles and update hand positions
         BasicCommands.addPlayer1Notification(out, "All wraithlingameState summoned!", 5);
-        player.setWraithlingameStatewarmCounter(3);
+        player.setWraithlingSwarmCounter(3);
     }
 }
 
@@ -145,7 +145,7 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
         if (tile.getUnit().getOwner() != gameState.getHuman() &&
                 !tile.getUnit().getName().equals("AI Avatar")) {
             
-            destroyUnit(tile.getUnit());
+            gameState.getUnitManager().destroyUnit(tile.getUnit());
     try {Thread.sleep(100); } catch (InterruptedException e) {e.printStackTrace();}
             Wraithling.summonWraithlingToTile(tile, out, gameState);
         }
@@ -186,10 +186,10 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
 
         // Reset the Wraithling Swarm counter and decrease mana as swarm counter < 3 indicates
         // that the player has started but not finished summoning all 3 WraithlingameState
-        if (player.getWraithlingameStatewarmCounter() < 3) {
+        if (player.getWraithlingSwarmCounter() < 3) {
             BasicCommands.addPlayer1Notification(out, "Wraithling Swarm spell broken! Choose another tile!", 3);
 
-            player.setWraithlingameStatewarmCounter(3);
+            player.setWraithlingSwarmCounter(3);
             // Decrease player's mana after casting the spell
             gameState.getHuman().setMana(player.getMana() - card.getManacost());
             gameState.getPlayerManager().modifyPlayerMana(player, player.getMana());

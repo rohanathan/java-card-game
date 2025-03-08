@@ -36,7 +36,7 @@ public class AICardSelector {
         List<PossibleSummon> options = new ArrayList<>();
         for (Card card : aiPlayer.getHand().getCards()) {
             if (card.isCreature() && card.getManacost() <= aiPlayer.getMana()) {
-                for (Tile tile : gameState.gameManager.getValidSummonTiles()) {
+                for (Tile tile : gameState.getBoardManager().getValidSummonTiles()) {
                     if (!tile.isOccupied()) {
                         PossibleSummon summon = new PossibleSummon(card, tile);
                         calculateSummonQuality(summon);
@@ -52,7 +52,7 @@ public class AICardSelector {
         List<PossibleSpell> options = new ArrayList<>();
         for (Card card : aiPlayer.getHand().getCards()) {
             if (!card.isCreature()) {
-                for (Tile tile : gameState.gameManager.getSpellRange(card)) {
+                for (Tile tile : gameState.getBoardManager().getSpellRange(card)) {
                     PossibleSpell spell = new PossibleSpell(card, tile);
                     spell.score = calculateSpellScore(card, tile);
                     options.add(spell);
@@ -99,7 +99,7 @@ public class AICardSelector {
     }
 
 
-    // 内部数据结构
+    
     static class PossibleSummon {
         final Card card;
         final Tile tile;

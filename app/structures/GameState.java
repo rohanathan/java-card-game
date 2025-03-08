@@ -60,7 +60,7 @@ public class GameState {
 		
 		
 		
-		this.gameManager = new GameManager(out, this, playerManager,boardManager,combatHandler);
+		this.gameManager = new GameManager(out, this, playerManager,boardManager,combatHandler,unitManager,abilityHandler);
 		this.boardManager=boardManager;
 		this.combatHandler=combatHandler;
 		 this.unitManager=unitManager;
@@ -253,6 +253,10 @@ public class GameState {
 	public AbilityHandler getAbilityHandler()
 	{
 		return abilityHandler;
+	}
+	public GameManager getGameManager()
+	{
+		return gameManager;
 	}
 }
 

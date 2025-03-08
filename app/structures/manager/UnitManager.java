@@ -131,13 +131,13 @@ public class UnitManager {
 				ShadowDancer.Deathwatch(gameState, out);
 			}
 			if (!unit.getName().equals("Bloodmoon Priestess")) {
-				BloodmoonPriestess.BloodmoonPriestessDeathwatch(out, gameState, this);
+				BloodmoonPriestess.BloodmoonPriestessDeathwatch(out, gameState, gameState.gameManager);
 			}
 			if (!unit.getName().equals("Shadow Watcher")) {
-				ShadowWatcher.ShadowWatcherDeathwatch(out, gameState, this);
+				ShadowWatcher.ShadowWatcherDeathwatch(out, gameState, gameState.gameManager);
 			}
 			if (!unit.getName().equals("Bad Omen")) {
-				BadOmen.BadOmenDeathwatch(out, gameState, this, unit);
+				BadOmen.BadOmenDeathwatch(out, gameState, gameState.gameManager, unit);
 			}
 		}
 

@@ -49,7 +49,8 @@ public class GameManager {
 		this.playerManager = playerManager; // Initialize PlayerManager
 		this.boardManager=boardManager;
 		this.combatHandler=combatHandler;
-
+		this.unitManager=unitManager;
+		this.abilityHandler=abilityHandler;
 	}
 }
 

@@ -53,7 +53,7 @@ public class CombatHandler {
 			BasicCommands.playUnitAnimation(out, attacked, UnitAnimationType.idle);
 
 			// update health
-			gameState.gameManager.modifyUnitHealth(attacked, attacked.getHealth() - attacker.getAttack());
+			gameState.getUnitManager().modifyUnitHealth(attacked, attacked.getHealth() - attacker.getAttack());
 			if (attacker.getAttack() >= 0 && attacker.equals(gameState.getHuman().getAvatar()) 
 					&& gameState.getHuman().getRobustness() > 0) {
  

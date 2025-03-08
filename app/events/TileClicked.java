@@ -87,7 +87,7 @@ public class TileClicked implements EventProcessor {
 	    }
 
 	    // Call the method to remove the card from hand and cast the spell
-	    gameState.gameManager.removeFromHandAndCast(gameState, card, tile);
+	    gameState.getAbilityHandler().removeFromHandAndCast(gameState, card, tile);
 
 
 	    // Remove highlight from all tiles
