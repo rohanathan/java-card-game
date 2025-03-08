@@ -22,7 +22,7 @@ public class BadOmen extends Unit {
         for (Unit unit : gameState.getUnits()) {
             if (unit.getName().equals("Bad Omen") &&
             		!victim.getName().equals("Bad Omen")) {
-                gm.updateUnitAttack(unit, unit.getAttack() + 1);            }
+                gameState.getUnitManager().updateUnitAttack(unit, unit.getAttack() + 1);            }
         }
 
     }

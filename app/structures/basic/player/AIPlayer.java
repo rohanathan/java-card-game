@@ -25,9 +25,8 @@ public class AIPlayer extends Player {
 		aiManager.takeTurn(out, message);
 	}
 
-<<<<<<< HEAD
 	private void notifyIfStunnedUnitRecovered(ActorRef out) {
-		if (stunnedUnit != null && stunnedUnit.getHealth() > 0) {
+		if (stunnedUnit != null && stunnedUnit.getHealgitth() > 0) {
 			BasicCommands.addPlayer1Notification(out, stunnedUnit.getName() + " is not stunned anymore", 2);
 			stunnedUnit = null;
 		}
@@ -183,14 +182,14 @@ public class AIPlayer extends Player {
 			PossibleSummon bestSummon = returnBestSummon();
 			if (bestSpell != null && bestSummon != null) {
 				if (bestSpell.moveQuality > bestSummon.moveQuality) {
-					gameState.gameManager.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
+					gameState.getAbilityHandler().removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
 				} else {
-					gameState.gameManager.castCardFromHand(bestSummon.card, bestSummon.tile);
+					gameState.getAbilityHandler().castCardFromHand(bestSummon.card, bestSummon.tile);
 				}
 			} else if (bestSpell != null) {
-				gameState.gameManager.removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
+				gameState.getAbilityHandler().removeFromHandAndCast(gameState, bestSpell.card, bestSpell.tile);
 			} else if (bestSummon != null) {
-				gameState.gameManager.castCardFromHand(bestSummon.card, bestSummon.tile);
+				gameState.getAbilityHandler().castCardFromHand(bestSummon.card, bestSummon.tile);
 			} else {
 				return;
 			}
@@ -379,11 +378,9 @@ public class AIPlayer extends Player {
 
 	private PossibleAttack findBestAttack(Set<PossibleAttack> attacks) {
 		return attacks.stream().max(Comparator.comparingInt(attack -> attack.moveQuality)).orElse(null);
-=======
 	@Override
 	public List<Unit> getUnits() {
 		return super.getUnits();
->>>>>>> 818f81e47e69469129b0d4257d9e89094f180e5c
 	}
 
 	@Override

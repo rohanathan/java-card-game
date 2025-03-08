@@ -22,7 +22,7 @@ public class Nightsorrow {
 		        		Unit unit = adjacentTile.getUnit();
                 		if(unit.getOwner() != gameState.getHuman() && !unit.getName().equals("AI Avatar")) {
                 			if(unit.getHealth()< unit.getMaxHealth()) {
-                				gameState.gameManager.destroyUnit(unit);
+                				gameState.getUnitManager().destroyUnit(unit);
 								BasicCommands.addPlayer1Notification(out, "Nightsorrow Assassin has killed " + unit.getName(), 3);
                 				break;
                 			}

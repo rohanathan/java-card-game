@@ -221,4 +221,32 @@ public class CombatHandler {
 		}
 		return false;
 	}
+    // // Highlight tiles for movement and attack
+	public void highlightValidMoves(Unit unit) {
+	    Tile[][] tiles = gameState.getBoard().getTiles();
+	    Set<Tile> validMoveTiles = gameState.getBoardManager().getValidMoves(tiles, unit);
+	    Set<Tile> validAttackTiles = gameState.getCombatHandler().findAttackTargets(unit);
+
+	    // Highlight valid movement and attack tiles
+	    if (validMoveTiles != null) {
+	        for (Tile tile : validMoveTiles) {
+	            if (!tile.isOccupied()) {
+	                // Highlight tile for movement
+	                gameState.getBoardManager().updateTileHighlight(tile, 1);
+					// Highlight additional attack tiles if adjacent to valid movement tiles
+					gameState.getBoardManager().performHighlightAdjacentAttackTiles(tile, unit);
+	            }
+	        }
+	    }
+
+	    // Highlight valid attack tiles
+	    for (Tile tile : validAttackTiles) {
+	        if (tile.isOccupied() && tile.getUnit().getOwner() != unit.getOwner()) {
+	            // Highlight tile for attack
+	            gameState.getBoardManager().updateTileHighlight(tile, 2);
+	        }
+	    }
+	}
+
+    
 }

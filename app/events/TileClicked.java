@@ -82,7 +82,7 @@ public class TileClicked implements EventProcessor {
 	        // Notify the player of insufficient mana
 	        BasicCommands.addPlayer1Notification(out, "Mana reserves depleted!", 2);
 	        gameState.getBoardManager().removeHighlightFromAll();
-	        gameState.gameManager.notClickingCard();
+	        gameState.getPlayerManager().notClickingCard();
 	        return; // Exit the method early if mana is insufficient
 	    }
 
@@ -112,7 +112,7 @@ public class TileClicked implements EventProcessor {
 			System.out.println("Unit is stunned.");
 			unit.setHasMoved(true);
 			gameState.getBoardManager().removeHighlightFromAll();
-			gameState.gameManager.stunnedUnit(unit.getName());
+			gameState.getAbilityHandler().stunnedUnit(unit.getName());
 			return;
 		}
 
@@ -157,8 +157,8 @@ public class TileClicked implements EventProcessor {
 
 	// Place unit card on board if tile is valid
 	private void handleCardSummoning(GameState gameState, Card card, Tile tile) {
-		if (gameState.gameManager.isValidSummon(card, tile)) {
-			gameState.gameManager.castCardFromHand(card, tile);
+		if (gameState.getUnitManager().isValidSummon(card, tile)) {
+			gameState.getAbilityHandler().castCardFromHand(card, tile);
 		} else {
 			gameState.getBoardManager().removeHighlightFromAll();
 		}
@@ -171,7 +171,7 @@ public class TileClicked implements EventProcessor {
 		
 		// Highlight move and attack range based on unit's turn state
 		if (!unit.hasAttacked() && !unit.hasMoved()) {
-			gameState.gameManager.highlightValidMoves(unit);
+			gameState.getCombatHandler().highlightValidMoves(unit);
 		// Highlight attack range only, if unit has moved but not attacked
 		} else if (unit.hasMoved()) {
 			gameState.getCombatHandler().highlightAttackRange(unit);

@@ -25,7 +25,7 @@ public class CardAction {
 
     // Set the current card clicked to the card at the specified position in the
     // player's hand
-    gameState.gameManager.highlightSelectedCard(handPosition);
+    gameState.getPlayerManager().highlightSelectedCard(handPosition);
   }
 
   /**

@@ -14,8 +14,8 @@ public class ShadowWatcher extends Unit{
         for (Unit unit : gameState.getUnits()) {
             if (unit.getName().equals("Shadow Watcher")) {
                 System.out.println("Found ShadowWatcher");
-                gm.updateUnitAttack(unit, unit.getAttack() + 1);
-                gm.modifyUnitHealth(unit, unit.getHealth() + 1);
+                gameState.getUnitManager().updateUnitAttack(unit, unit.getAttack() + 1);
+                gameState.getUnitManager().modifyUnitHealth(unit, unit.getHealth() + 1);
                 
             }
         }

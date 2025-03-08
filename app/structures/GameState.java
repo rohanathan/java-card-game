@@ -29,6 +29,7 @@ public class GameState {
 	private BoardManager boardManager;
 	private CombatHandler combatHandler;
 	private UnitManager unitManager;
+	private AbilityHandler abilityHandler;
 	// Keep track of the player currently taking their turn
 	private Player currentPlayer;
 
@@ -55,7 +56,7 @@ public class GameState {
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler,UnitManager unitManager) {
+	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler,UnitManager unitManager,AbilityHandler abilityHandler) {
 		
 		
 		
@@ -63,6 +64,7 @@ public class GameState {
 		this.boardManager=boardManager;
 		this.combatHandler=combatHandler;
 		 this.unitManager=unitManager;
+		 this.abilityHandler=abilityHandler;
 		this.board = boardManager.initializeBoard();
 		
 		// Initialize playerManager
@@ -245,6 +247,12 @@ public class GameState {
 	public CombatHandler getCombatHandler() {
 		return combatHandler;
 	}
-	
+	public UnitManager getUnitManager() {
+		return unitManager;
+	}
+	public AbilityHandler getAbilityHandler()
+	{
+		return abilityHandler;
+	}
 }
 

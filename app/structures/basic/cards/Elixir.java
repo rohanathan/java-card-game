@@ -34,9 +34,9 @@ public class Elixir {
 			
 			if (leftTile != null && leftTile.isOccupied() &&
 					leftTile.getUnit().getOwner()instanceof AIPlayer) {
-				gameState.gameManager.modifyUnitHealth(leftTile.getUnit(), leftTile.getUnit().getHealth() + healthBoost);
-				gameState.gameManager.updateUnitAttack(leftTile.getUnit(), leftTile.getUnit().getAttack() + attackBoost);
-				gameState.gameManager.healing(leftTile);
+				gameState.getUnitManager().modifyUnitHealth(leftTile.getUnit(), leftTile.getUnit().getHealth() + healthBoost);
+				gameState.getUnitManager().updateUnitAttack(leftTile.getUnit(), leftTile.getUnit().getAttack() + attackBoost);
+				gameState.getAbilityHandler().healing(leftTile);
 
 	        }
 			
@@ -47,9 +47,9 @@ public class Elixir {
 			
 			if (rightTile != null && rightTile.isOccupied() &&
 					rightTile.getUnit().getOwner() instanceof AIPlayer) {
-				gameState.gameManager.modifyUnitHealth(rightTile.getUnit(), rightTile.getUnit().getHealth() + healthBoost);
-				gameState.gameManager.updateUnitAttack(rightTile.getUnit(), rightTile.getUnit().getAttack() + attackBoost);
-				gameState.gameManager.healing(rightTile);
+				gameState.getUnitManager().modifyUnitHealth(rightTile.getUnit(), rightTile.getUnit().getHealth() + healthBoost);
+				gameState.getUnitManager().updateUnitAttack(rightTile.getUnit(), rightTile.getUnit().getAttack() + attackBoost);
+				gameState.getAbilityHandler().healing(rightTile);
 
 			}
 
@@ -72,22 +72,22 @@ public class Elixir {
                 if (lowestHealthUnit != null) {
                     int newHealth = lowestHealthUnit.getHealth() + 4;
                     if (newHealth > lowestHealthUnit.getMaxHealth()) {
-                        gs.gameManager.modifyUnitHealth(lowestHealthUnit, lowestHealthUnit.getMaxHealth());
+                        gs.getUnitManager().modifyUnitHealth(lowestHealthUnit, lowestHealthUnit.getMaxHealth());
                     } else {
-                        gs.gameManager.modifyUnitHealth(lowestHealthUnit, newHealth);
+                        gs.getUnitManager().modifyUnitHealth(lowestHealthUnit, newHealth);
                     }
                 }
             } else {
                 int newHealth = unit.getHealth() + 4;
                 if (newHealth > unit.getMaxHealth()) {
-                    gs.gameManager.modifyUnitHealth(unit, unit.getMaxHealth());
+                    gs.getUnitManager().modifyUnitHealth(unit, unit.getMaxHealth());
                 } else {
-                    gs.gameManager.modifyUnitHealth(unit, newHealth);
+                    gs.getUnitManager().modifyUnitHealth(unit, newHealth);
                 }
             }
         }
 		BasicCommands.addPlayer1Notification(out, "Sundrop Elixir heals a unit!", 3);
-        gs.gameManager.healing(unit.getActiveTile(gs.getBoard()));
+        gs.getAbilityHandler().healing(unit.getActiveTile(gs.getBoard()));
     }
 
 }

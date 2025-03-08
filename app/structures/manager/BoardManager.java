@@ -135,7 +135,7 @@ public class BoardManager {
 			}
 		}
 		if (!gameState.getHuman().getHand().getCards().isEmpty()) {
-			gameState.gameManager.notClickingCard();
+			gameState.getPlayerManager().notClickingCard();
 		}
 	}
     

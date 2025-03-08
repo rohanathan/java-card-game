@@ -3,6 +3,7 @@ package structures.manager;
 import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.basic.player.Player;
+import structures.basic.player.Hand;
 import structures.basic.player.HumanPlayer;
 import structures.basic.cards.Card;
 import structures.GameState;
@@ -88,6 +89,37 @@ public class PlayerManager {
 			for (int i = 0; i < numberOfCards; i++) {
 				player.drawCard();
 			}
+		}
+	}
+	// Method to add highlight to card and set it as clicked
+	public void highlightSelectedCard(int handPosition) {
+		notClickingCard();
+		Card card = gameState.getCurrentPlayer().getHand().getCardAtPosition(handPosition);
+		gameState.setCurrentCardPosition(handPosition);
+		gameState.setActiveCard(card);
+		BasicCommands.drawCard(out, card, handPosition,1);
+	}
+	// Method to remove the current card clicked and stop highlighting
+	public void notClickingCard() {
+		gameState.setActiveCard(null);
+		gameState.setCurrentCardPosition(0);
+
+		for (int i = 1; i <= gameState.getHuman().getHand().getNumberOfCardsInHand(); i++) {
+			Card card = gameState.getHuman().getHand().getCardAtPosition(i);
+			BasicCommands.drawCard(out, card, i, 0);
+		}
+	}
+	// Method for updating hand positions following a card removal
+	public void updateHandPositions(Hand hand) {
+		if (hand.getNumberOfCardsInHand() == 0) {
+			BasicCommands.deleteCard(out, 1);
+		}
+
+		// Iterate over the remaining cards in the hand
+		for (int i = 0; i < hand.getNumberOfCardsInHand(); i++) {
+			// Draw each card in its new position, positions are usually 1-indexed on the UI
+			BasicCommands.deleteCard(out, i + 2);
+			BasicCommands.drawCard(out, hand.getCardAtIndex(i), i + 1, 0);
 		}
 	}
 }

@@ -89,12 +89,12 @@ public class AICardSelector {
     }
 
     private void executeSummon(PossibleSummon summon) {
-        gameState.gameManager.castCardFromHand(summon.card, summon.tile);
+        gameState.getAbilityHandler().castCardFromHand(summon.card, summon.tile);
         aiPlayer.setMana(aiPlayer.getMana() - summon.card.getManacost());
     }
 
     private void executeSpell(PossibleSpell spell) {
-        gameState.gameManager.removeFromHandAndCast(gameState, spell.card, spell.tile);
+        gameState.getAbilityHandler().removeFromHandAndCast(gameState, spell.card, spell.tile);
         aiPlayer.setMana(aiPlayer.getMana() - spell.card.getManacost());
     }
 
