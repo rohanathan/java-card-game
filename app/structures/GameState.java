@@ -15,18 +15,20 @@ import java.util.*;
 /**
  * This class can be used to hold information about the on-going game. Its
  * created with the GameActor.
- * 
+ *
  * @author Dr. Richard McCreadie
  *
  */
 public class GameState {
-	
+
 
 	public boolean gameInitalised = false;
 
 	public boolean isGameOver = false;
 	private PlayerManager playerManager; // Add PlayerManager reference
 	private BoardManager boardManager;
+	private CombatHandler combatHandler;
+	private UnitManager unitManager;
 	// Keep track of the player currently taking their turn
 	private Player currentPlayer;
 
@@ -49,20 +51,22 @@ public class GameState {
 	/**
 	 * This function initialises all the assets Board, Player etc As well as
 	 * tracking critical game states
-	 * 
+	 *
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager) {
-		
-		
-		
-		this.gameManager = new GameManager(out, this, playerManager,boardManager);
+	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler,UnitManager unitManager) {
+
+
+
+		this.gameManager = new GameManager(out, this, playerManager,boardManager,combatHandler);
 		this.boardManager=boardManager;
+		this.combatHandler=combatHandler;
+		this.unitManager=unitManager;
 		this.board = boardManager.initializeBoard();
-		
+
 		// Initialize playerManager
-		this.playerManager = playerManager; 
+		this.playerManager = playerManager;
 
 
 		// Initialize stack of action history
@@ -80,8 +84,8 @@ public class GameState {
 		playerManager.modifyPlayerMana(human, 2);
 
 		// Create the human and AI avatars
-		gameManager.initializeAvatar(board, human);
-		gameManager.initializeAvatar(board, ai);
+		unitManager.initializeAvatar(board, human);
+		unitManager.initializeAvatar(board, ai);
 		// gameManager.loadUnitsForTesting(ai);
 
 		// Set the current player to the human player
@@ -113,18 +117,18 @@ public class GameState {
 		this.playerManager.modifyPlayerMana(currentPlayer, currentPlayer.getTurn() + 1);
 	}
 
-	
+
 	/**
 	 * This will handle the cards in the deck
 	 * and the hand of the player
-	 * used when the endTurn is clicked 
+	 * used when the endTurn is clicked
 	 */
 	public void handleCardManagement() {
 		try {
 			if (currentPlayer.getHand().getNumberOfCardsInHand() >= 6) {
 				// Discard the top card from the hand if it's at maximum size.
 				if((currentPlayer.getDeck()).getDeck().isEmpty()) {
-					} else {
+				} else {
 					currentPlayer.getDeck().drawCard();
 				}
 
@@ -134,13 +138,13 @@ public class GameState {
 			}
 		}
 		catch (IllegalStateException e){
-				// Handle the exception, for example by displaying an error message or logging
-				System.err.println("Cannot draw a card: " + e.getMessage());
+			// Handle the exception, for example by displaying an error message or logging
+			System.err.println("Cannot draw a card: " + e.getMessage());
 		}
 	}
 
 
-	
+
 	public Board getBoard() {
 		return board;
 	}
@@ -151,7 +155,7 @@ public class GameState {
 
 	public void addUnitstoBoard(Unit unit) {
 		this.unitsOnBoard.add(unit);
-		}
+	}
 
 	public Player getHuman() {
 		return this.human;
@@ -203,7 +207,7 @@ public class GameState {
 	public void removeFromTotalUnits(int numberToRemove) {
 		this.totalUnits -= numberToRemove;
 	}
-	
+
 
 	// Get all the units on the board
 	public ArrayList<Unit> getUnits() {
@@ -217,7 +221,7 @@ public class GameState {
 	/**
 	 * Checks and see if the game has ended If so it will send the apropiate
 	 * notifcation
-	 * 
+	 *
 	 * @param out
 	 */
 	public void endGame(ActorRef out) {
@@ -230,10 +234,17 @@ public class GameState {
 		}
 	}
 
+	public PlayerManager getPlayerManager() {
+		return playerManager;
+	}
+
 	//Accesing the Board Manager
 	public BoardManager getBoardManager() {
 		return boardManager;
 	}
-	
+	public CombatHandler getCombatHandler() {
+		return combatHandler;
+	}
+
 }
 
