@@ -26,7 +26,7 @@ public class GameState {
 
 	public boolean isGameOver = false;
 	private PlayerManager playerManager; // Add PlayerManager reference
-
+	private BoardManager boardManager;
 	// Keep track of the player currently taking their turn
 	private Player currentPlayer;
 
@@ -53,12 +53,13 @@ public class GameState {
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerManager playerManager) {
+	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager) {
 		
 		
 		
-		this.gameManager = new GameManager(out, this, playerManager);
-		this.board = gameManager.initializeBoard();
+		this.gameManager = new GameManager(out, this, playerManager,boardManager);
+		this.boardManager=boardManager;
+		this.board = boardManager.initializeBoard();
 		
 		// Initialize playerManager
 		this.playerManager = playerManager; 
@@ -228,4 +229,11 @@ public class GameState {
 			isGameOver = true;
 		}
 	}
+
+	//Accesing the Board Manager
+	public BoardManager getBoardManager() {
+		return boardManager;
+	}
+	
 }
+

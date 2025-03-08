@@ -38,34 +38,36 @@ public class GameManager {
 	private final ActorRef out;
 	private final GameState gs;
 	private final PlayerManager playerManager;
+	private final BoardManager boardManager;
 
-	public GameManager(ActorRef out, GameState gs, PlayerManager playerManager) {
+	public GameManager(ActorRef out, GameState gs, PlayerManager playerManager,BoardManager boardManager) {
 		this.out = out;
 		this.gs = gs;
 		this.playerManager = playerManager; // Initialize PlayerManager
+		this.boardManager=boardManager;
 
 	}
 
 	
 
 	// initial board setup
-	public Board initializeBoard() {
-		Board board = new Board();
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 5; j++) {
-				Tile tile = BasicObjectBuilders.loadTile(i, j);
-				tile.setHighlightMode(0);
-				board.setTile(tile, i, j);
-				BasicCommands.drawTile(out, tile, 0);
-				try {
-					Thread.sleep(5);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return board;
-	}
+	// public Board initializeBoard() {
+	// 	Board board = new Board();
+	// 	for (int i = 0; i < 9; i++) {
+	// 		for (int j = 0; j < 5; j++) {
+	// 			Tile tile = BasicObjectBuilders.loadTile(i, j);
+	// 			tile.setHighlightMode(0);
+	// 			board.setTile(tile, i, j);
+	// 			BasicCommands.drawTile(out, tile, 0);
+	// 			try {
+	// 				Thread.sleep(5);
+	// 			} catch (InterruptedException e) {
+	// 				e.printStackTrace();
+	// 			}
+	// 		}
+	// 	}
+	// 	return board;
+	// }
 
 	// initial player setup
 	public void initializeAvatar(Board board, Player player) {
@@ -197,30 +199,30 @@ public class GameManager {
 
 	}
 
-	// remove highlight from all tiles
-	public void removeHighlightFromAll() {
-		Board board = gs.getBoard();
-		Tile[][] tiles = board.getTiles();
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 5; j++) {
-				if (tiles[i][j].getHighlightMode() != 0) {
-					Tile currentTile = tiles[i][j];
-					currentTile.setHighlightMode(0);
-					BasicCommands.drawTile(out, currentTile, 0);
-				}
-			}
-		}
-		if (!gs.getHuman().getHand().getCards().isEmpty()) {
-			notClickingCard();
-		}
-	}
+	// // remove highlight from all tiles
+	// public void removeHighlightFromAll() {
+	// 	Board board = gs.getBoard();
+	// 	Tile[][] tiles = board.getTiles();
+	// 	for (int i = 0; i < 9; i++) {
+	// 		for (int j = 0; j < 5; j++) {
+	// 			if (tiles[i][j].getHighlightMode() != 0) {
+	// 				Tile currentTile = tiles[i][j];
+	// 				currentTile.setHighlightMode(0);
+	// 				BasicCommands.drawTile(out, currentTile, 0);
+	// 			}
+	// 		}
+	// 	}
+	// 	if (!gs.getHuman().getHand().getCards().isEmpty()) {
+	// 		notClickingCard();
+	// 	}
+	// }
 
 
 	// Move to the closest adjacent unit to defender, and call adjacent attack
 	public void moveAndAttack(Unit attacker, Unit attacked) {
 		// Retrieve the tiles of the board and the valid movement tiles for the attacker
 		Tile[][] tiles = gs.getBoard().getTiles();
-		Set<Tile> validMoveTiles = getValidMoves(tiles, attacker);
+		Set<Tile> validMoveTiles = boardManager.getValidMoves(tiles, attacker);
 		Tile defenderTile = attacked.getActiveTile(gs.getBoard());
 
 		// Initialize variables to keep track of the closest tile and its distance
@@ -243,7 +245,7 @@ public class GameManager {
 
 		// If a closest tile has been found, move the attacker to this tile
 		if (closestTile != null) {
-			updateUnitPositionAndMove(attacker, closestTile);
+			boardManager.updateUnitPositionAndMove(attacker, closestTile);
 			// Ensure a small delay to let the move action complete before attacking
 			try {
 				Thread.sleep(1000);
@@ -261,10 +263,10 @@ public class GameManager {
 		}
 	}
 
-	// Highlight tiles for movement and attack
+	// // Highlight tiles for movement and attack
 	public void highlightValidMoves(Unit unit) {
 	    Tile[][] tiles = gs.getBoard().getTiles();
-	    Set<Tile> validMoveTiles = getValidMoves(tiles, unit);
+	    Set<Tile> validMoveTiles = boardManager.getValidMoves(tiles, unit);
 	    Set<Tile> validAttackTiles = findAttackTargets(unit);
 
 	    // Highlight valid movement and attack tiles
@@ -272,9 +274,9 @@ public class GameManager {
 	        for (Tile tile : validMoveTiles) {
 	            if (!tile.isOccupied()) {
 	                // Highlight tile for movement
-	                updateTileHighlight(tile, 1);
+	                boardManager.updateTileHighlight(tile, 1);
 					// Highlight additional attack tiles if adjacent to valid movement tiles
-					highlightAdjacentAttackTiles(tile, unit);
+					boardManager.performHighlightAdjacentAttackTiles(tile, unit);
 	            }
 	        }
 	    }
@@ -283,111 +285,71 @@ public class GameManager {
 	    for (Tile tile : validAttackTiles) {
 	        if (tile.isOccupied() && tile.getUnit().getOwner() != unit.getOwner()) {
 	            // Highlight tile for attack
-	            updateTileHighlight(tile, 2);
+	            boardManager.updateTileHighlight(tile, 2);
 	        }
 	    }
 	}
 
-	// Method to highlight adjacent tiles for attack
-	private void highlightAdjacentAttackTiles(Tile tile, Unit unit) {
-		Board board = gs.getBoard();
-		int x = tile.getTilex();
-		int y = tile.getTiley();
+	// // Method to highlight adjacent tiles for attack
+	// private void highlightAdjacentAttackTiles(Tile tile, Unit unit) {
+	// 	Board board = gs.getBoard();
+	// 	int x = tile.getTilex();
+	// 	int y = tile.getTiley();
 
-		int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
-		for (int[] direction : directions) {
-			int newX = x + direction[0];
-			int newY = y + direction[1];
-			if (isValidTile(newX, newY) && board.getTile(newX, newY).isOccupied() && board.getTile(newX, newY).getUnit().getOwner() != unit.getOwner()) {
-				updateTileHighlight(board.getTile(newX, newY), 2); // Highlight tile for attack
-			}
-		}
-	}
+	// 	int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
+	// 	for (int[] direction : directions) {
+	// 		int newX = x + direction[0];
+	// 		int newY = y + direction[1];
+	// 		if (isValidTile(newX, newY) && board.getTile(newX, newY).isOccupied() && board.getTile(newX, newY).getUnit().getOwner() != unit.getOwner()) {
+	// 			boardManager.updateTileHighlight(board.getTile(newX, newY), 2); // Highlight tile for attack
+	// 		}
+	// 	}
+	// }
 
-	// Method to calculate and return the set of valid actions (tiles) for a given unit
-	public Set<Tile> getValidMoves(Tile[][] board, Unit unit) {
+	// // Method to calculate and return the set of valid actions (tiles) for a given unit
+	// public Set<Tile> getValidMoves(Tile[][] board, Unit unit) {
 		
-		Set<Tile> validTiles = new HashSet<>();
+	// 	Set<Tile> validTiles = new HashSet<>();
 
-		// Skip calculation if unit is provoked or has moved/attacked this turn
-		if (checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
-			return validTiles;
-		}
+	// 	// Skip calculation if unit is provoked or has moved/attacked this turn
+	// 	if (checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
+	// 		return validTiles;
+	// 	}
 
-		if (unit.getName().equals("Young Flamewing")) {
-			return gs.getBoard().getAllUnoccupiedTiles(board);
-		}
+	// 	if (unit.getName().equals("Young Flamewing")) {
+	// 		return gs.getBoard().getAllUnoccupiedTiles(board);
+	// 	}
 
-		Player currentPlayer = unit.getOwner();
-		int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-		int[][] extendedDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-1, -1}, {1, 1}, {-1, 1}, {1, -1}};
+	// 	Player currentPlayer = unit.getOwner();
+	// 	int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+	// 	int[][] extendedDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-1, -1}, {1, 1}, {-1, 1}, {1, -1}};
 
-		// Handle immediate adjacent tiles (including diagonals)
-		for (int[] direction : directions) {
-			addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
-		}
+	// 	// Handle immediate adjacent tiles (including diagonals)
+	// 	for (int[] direction : directions) {
+	// 		addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
+	// 	}
 
-		// Handle two tiles away horizontally or vertically, making sure not to pass through enemy units
-		for (int[] direction : extendedDirections) {
-			addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
-		}
+	// 	// Handle two tiles away horizontally or vertically, making sure not to pass through enemy units
+	// 	for (int[] direction : extendedDirections) {
+	// 		addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
+	// 	}
 
-		return validTiles;
-	}
+	// 	return validTiles;
+	// }
 
-	// Helper method to add a valid tile to the set of valid actions if the conditions are met
-	private void addValidTileInDirection(Tile[][] board, Unit unit, int dx, int dy, Set<Tile> validTiles, Player currentPlayer) {
-		int startX = unit.getPosition().getTilex();
-		int startY = unit.getPosition().getTiley();
-		int endX = startX + dx;
-		int endY = startY + dy;
+	// 
+	
+	
 
-		// Check each step along the path for enemy occupation
-		int pathLength = Math.max(Math.abs(dx), Math.abs(dy));
-		for (int step = 1; step <= pathLength; step++) {
-			int stepX = startX + (int)Math.signum(dx) * step;
-			int stepY = startY + (int)Math.signum(dy) * step;
+	// private boolean isEnemyOnTile(Tile tile, Player currentPlayer) {
+	// 	return tile.isOccupied() && tile.getUnit().getOwner() != currentPlayer;
+	// }
 
-			// Additional check for diagonal moves
-			if (Math.abs(dx) == 1 && Math.abs(dy) == 1 && step == 1) {
-				if (isValidTile(startX + dx, startY) && isValidTile(startX, startY + dy)) {
-					Tile orthogonal1 = board[startX + dx][startY];
-					Tile orthogonal2 = board[startX][startY + dy];
-					if (isEnemyOnTile(orthogonal1, currentPlayer) && isEnemyOnTile(orthogonal2, currentPlayer)) {
-						// If both orthogonal tiles are blocked by enemy units, the diagonal move is invalid
-						return;
-					}
-				}
-				else {
-					// One of the orthogonal tiles is out of bounds
-					return;
-				}
-			}
-
-			// If any step along the path is invalid, abort adding this tile
-			if (!isValidTile(stepX, stepY) || isEnemyOnTile(board[stepX][stepY], currentPlayer)) {
-				return;
-			}
-		}
-
-		// If the path is clear, add the final tile to validTiles
-		if (isValidTile(endX, endY)) {
-			Tile tile = board[endX][endY];
-			if (!tile.isOccupied()) { // Ensure the final tile is not occupied
-				validTiles.add(tile);
-			}
-		}
-	}
-
-	private boolean isEnemyOnTile(Tile tile, Player currentPlayer) {
-		return tile.isOccupied() && tile.getUnit().getOwner() != currentPlayer;
-	}
-
-	// Checks if a tile position is within the boundaries of the game board
-	private boolean isValidTile(int x, int y) {
-		Tile[][] board = gs.getBoard().getTiles();
-		return x >= 0 && y >= 0 && x < board.length && y < board[x].length;
-	}
+	// // Checks if a tile position is within the boundaries of the game board
+	// private boolean isValidTile(int x, int y) {
+	// 	Tile[][] board = gs.getBoard().getTiles();
+	// 	return x >= 0 && y >= 0 && x < board.length && y < board[x].length;
+	// }
 
 	// Checks if provoke unit is present on the board and around the tile on which an alleged enemy unit (target) is located
 	public Set<Position> checkProvoker(Tile tile) {
@@ -434,12 +396,12 @@ public class GameManager {
 		return false;
 	}
 
-	// Highlight tiles for attacking only
+	// // Highlight tiles for attacking only
 	public void highlightAttackRange(Unit unit) {
 		Set<Tile> validAttackTiles = findAttackTargets(unit);
 
 		// Highlight valid attack tiles
-		validAttackTiles.forEach(tile -> updateTileHighlight(tile, 2)); // 2 for attack highlight mode
+		validAttackTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 2)); // 2 for attack highlight mode
 	}
 
 	// Calculate and return the set of valid attack targets for a given unit
@@ -490,7 +452,7 @@ public class GameManager {
 	public void attack(Unit attacker, Unit attacked) {
 		if (!attacker.hasAttacked()) {
 			// remove highlight from all tiles
-			updateTileHighlight(attacked.getActiveTile(gs.getBoard()), 2);
+			boardManager.updateTileHighlight(attacked.getActiveTile(gs.getBoard()), 2);
 			BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.attack);
 			try {
 				Thread.sleep(1500);
@@ -514,7 +476,7 @@ public class GameManager {
  
 					Wraithling.summonAvatarWraithling(out, gs);
 				}
-			removeHighlightFromAll();
+			boardManager.removeHighlightFromAll();
 
 				
 			}
@@ -540,7 +502,7 @@ public class GameManager {
 		}
 	}	
 
-	// highlight tiles for summoning units (does not currently take into account special units)
+	// // highlight tiles for summoning units (does not currently take into account special units)
 	public void highlightSpellRange(Card card, Player player) {
 		// Validate inputs
 		if (card == null  || player == null) {
@@ -548,19 +510,19 @@ public class GameManager {
 			return;
 		}
 		if (!card.isCreature()) {
-			Set<Tile> validCastTiles = getSpellRange(card);
+			Set<Tile> validCastTiles = boardManager.getSpellRange(card);
 			
 			if (card.getCardname().equals("Horn of the Forsaken")) {
-				updateTileHighlight(gs.getHuman().getAvatar().getActiveTile(gs.getBoard()), 1);
+				boardManager.updateTileHighlight(gs.getHuman().getAvatar().getActiveTile(gs.getBoard()), 1);
 				BasicCommands.addPlayer1Notification(out, "Click on the Avatar to apply the spell", 2);
 				return;
 			}
 			if (card.getCardname().equals("Dark Terminus")) {
-				validCastTiles.forEach(tile -> updateTileHighlight(tile, 2));
+				validCastTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 2));
 				return;
 			}
 			if (card.getCardname().equals("Wraithling Swarm")) {
-				validCastTiles.forEach(tile -> updateTileHighlight(tile, 1));
+				validCastTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 1));
 				BasicCommands.addPlayer1Notification(out, "You have 3 wraithlings to place", 2);
 				return;
 			}
@@ -569,88 +531,88 @@ public class GameManager {
 		System.out.println("Highlighting spellrange " + card.getCardname());
 	}
 
-	// highlight tiles for summoning units
-	public void highlightSummonRange() {
-		Set<Tile> validTiles = getValidSummonTiles();
-		validTiles.forEach(tile -> updateTileHighlight(tile, 1));
-	}
+	// // highlight tiles for summoning units
+	// public void highlightSummonRange() {
+	// 	Set<Tile> validTiles = boardManager.getValidSummonTiles();
+	// 	validTiles.forEach(tile -> boardManager.updateTileHighlight(tile, 1));
+	// }
 
-	// Returns the set of valid tiles for summoning units
-	public Set<Tile> getValidSummonTiles() {
-		Player player = gs.getCurrentPlayer();
-		Set<Tile> validTiles = new HashSet<>();
-		Tile[][] tiles = gs.getBoard().getTiles();
-		for (int i = 0; i < tiles.length; i++) {
-			for (int j = 0; j < tiles[i].length; j++) {
-				Tile currentTile = tiles[i][j];
-				if (isAdjacentToAlly(i, j, player) && !currentTile.isOccupied()) {
-					validTiles.add(currentTile);
-				}
-			}
-		}
-		return validTiles;
-	}
+	// // Returns the set of valid tiles for summoning units
+	// public Set<Tile> getValidSummonTiles() {
+	// 	Player player = gs.getCurrentPlayer();
+	// 	Set<Tile> validTiles = new HashSet<>();
+	// 	Tile[][] tiles = gs.getBoard().getTiles();
+	// 	for (int i = 0; i < tiles.length; i++) {
+	// 		for (int j = 0; j < tiles[i].length; j++) {
+	// 			Tile currentTile = tiles[i][j];
+	// 			if (isAdjacentToAlly(i, j, player) && !currentTile.isOccupied()) {
+	// 				validTiles.add(currentTile);
+	// 			}
+	// 		}
+	// 	}
+	// 	return validTiles;
+	// }
 	
 	//Check for spell range 
-	// Check for spell range 
-	public Set<Tile> getSpellRange(Card card) {
-	    Set<Tile> validTiles = new HashSet<>();
-	    Tile[][] tiles = gs.getBoard().getTiles();
+	// // Check for spell range 
+	// public Set<Tile> getSpellRange(Card card) {
+	//     Set<Tile> validTiles = new HashSet<>();
+	//     Tile[][] tiles = gs.getBoard().getTiles();
 
-	    if (card.getCardname().equals("Dark Terminus")) {
-	        for (int i = 0; i < tiles.length; i++) {
-	            for (int j = 0; j < tiles[i].length; j++) {
-	                Tile currentTile = tiles[i][j];
-	                Unit unit = currentTile.getUnit();
+	//     if (card.getCardname().equals("Dark Terminus")) {
+	//         for (int i = 0; i < tiles.length; i++) {
+	//             for (int j = 0; j < tiles[i].length; j++) {
+	//                 Tile currentTile = tiles[i][j];
+	//                 Unit unit = currentTile.getUnit();
 	                
-	                // Check if the tile is adjacent to a friendly unit and not occupied
-	                if (unit != null && !(unit.getOwner() instanceof HumanPlayer) && !unit.getName().equals("AI Avatar")) {
-	                    validTiles.add(currentTile);
-	                }
-	            }
-	        }
-	    }
+	//                 // Check if the tile is adjacent to a friendly unit and not occupied
+	//                 if (unit != null && !(unit.getOwner() instanceof HumanPlayer) && !unit.getName().equals("AI Avatar")) {
+	//                     validTiles.add(currentTile);
+	//                 }
+	//             }
+	//         }
+	//     }
 	    
-	    if (card.getCardname().equals("Wraithling Swarm")) {
-	    		return getValidSummonTiles();
-	    }
+	//     if (card.getCardname().equals("Wraithling Swarm")) {
+	//     		return boardManager.getValidSummonTiles();
+	//     }
 	    
-	    if (card.getCardname().equals("Beamshock")) {
-	    	List<Unit> humanUnits = gs.getHuman().getUnits();
-			Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
-			validTiles.add(u.getActiveTile(gs.getBoard()));
-        }
-	    if (card.getCardname().equals("Truestrike")) {
-    		validTiles.add(gs.getHuman().getAvatar().getActiveTile(gs.getBoard()));
-        }
-	    if (card.getCardname().equals("Sundrop Elixir")) {
-	    	//could potentially change for different units as well
-    		validTiles.add(gs.getAi().getAvatar().getActiveTile(gs.getBoard()));
-        }
+	//     if (card.getCardname().equals("Beamshock")) {
+	//     	List<Unit> humanUnits = gs.getHuman().getUnits();
+	// 		Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
+	// 		validTiles.add(u.getActiveTile(gs.getBoard()));
+    //     }
+	//     if (card.getCardname().equals("Truestrike")) {
+    // 		validTiles.add(gs.getHuman().getAvatar().getActiveTile(gs.getBoard()));
+    //     }
+	//     if (card.getCardname().equals("Sundrop Elixir")) {
+	//     	//could potentially change for different units as well
+    // 		validTiles.add(gs.getAi().getAvatar().getActiveTile(gs.getBoard()));
+    //     }
 	    
-	    return validTiles;
-	}
+	//     return validTiles;
+	// }
 
 
 
-	// Check if a tile is adjacent to a friendly unit of the specified player
-	private boolean isAdjacentToAlly(int x, int y, Player player) {
-		Tile[][] tiles = gs.getBoard().getTiles();
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dy = -1; dy <= 1; dy++) {
-				if (dx == 0 && dy == 0) continue; // Skip the current tile
-				int adjX = x + dx;
-				int adjY = y + dy;
-				if (isValidTile(adjX, adjY)) {
-					Tile adjTile = tiles[adjX][adjY];
-					if (adjTile.isOccupied() && adjTile.getUnit().getOwner() == player) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
+	// // Check if a tile is adjacent to a friendly unit of the specified player
+	// private boolean isAdjacentToAlly(int x, int y, Player player) {
+	// 	Tile[][] tiles = gs.getBoard().getTiles();
+	// 	for (int dx = -1; dx <= 1; dx++) {
+	// 		for (int dy = -1; dy <= 1; dy++) {
+	// 			if (dx == 0 && dy == 0) continue; // Skip the current tile
+	// 			int adjX = x + dx;
+	// 			int adjY = y + dy;
+	// 			if (isValidTile(adjX, adjY)) {
+	// 				Tile adjTile = tiles[adjX][adjY];
+	// 				if (adjTile.isOccupied() && adjTile.getUnit().getOwner() == player) {
+	// 					return true;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	return false;
+	// }
 
 	// check if summoning is valid
 	public boolean isValidSummon(Card card, Tile tile) {
@@ -660,80 +622,80 @@ public class GameManager {
 		return tile.getHighlightMode() == 1;
 	}
 
-	// helper method to update tile highlight
-	public void updateTileHighlight(Tile tile, int tileHighlightMode) {
-		try {
-			Thread.sleep(20);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	// // helper method to update tile highlight
+	// public void updateTileHighlight(Tile tile, int tileHighlightMode) {
+	// 	try {
+	// 		Thread.sleep(20);
+	// 	} catch (InterruptedException e) {
+	// 		e.printStackTrace();
+	// 	}
 
-		tile.setHighlightMode(tileHighlightMode);
-		BasicCommands.drawTile(out, tile, tileHighlightMode);
-	}
+	// 	tile.setHighlightMode(tileHighlightMode);
+	// 	BasicCommands.drawTile(out, tile, tileHighlightMode);
+	// }
 
-	// Method to actually move the unit to the new tile
-	public void updateUnitPositionAndMove(Unit unit, Tile newTile) {
-		if (newTile.getHighlightMode() != 1 && gs.getCurrentPlayer() instanceof HumanPlayer) {
-			System.out.println("New tile is not highlighted for movement");
-			removeHighlightFromAll();
-			return;
-		}
+	// // Method to actually move the unit to the new tile
+	// public void updateUnitPositionAndMove(Unit unit, Tile newTile) {
+	// 	if (newTile.getHighlightMode() != 1 && gs.getCurrentPlayer() instanceof HumanPlayer) {
+	// 		System.out.println("New tile is not highlighted for movement");
+	// 		boardManager.removeHighlightFromAll();
+	// 		return;
+	// 	}
 
-		Board board = gs.getBoard();
+	// 	Board board = gs.getBoard();
 
-		// get current tile
-		Tile currentTile = unit.getActiveTile(board);
+	// 	// get current tile
+	// 	Tile currentTile = unit.getActiveTile(board);
 
-		// update unit position
-		currentTile.removeUnit();
-		newTile.setUnit(unit);
-		unit.setPositionByTile(newTile);
+	// 	// update unit position
+	// 	currentTile.removeUnit();
+	// 	newTile.setUnit(unit);
+	// 	unit.setPositionByTile(newTile);
 
-		// remove highlight from all tiles
-		removeHighlightFromAll();
+	// 	// remove highlight from all tiles
+	// 	boardManager.removeHighlightFromAll();
 
-		try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
+	// 	try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
 
-		// Move unit to tile according to the result of yFirst
-		BasicCommands.moveUnitToTile(out, unit, newTile, yFirst(currentTile, newTile, unit));
+	// 	// Move unit to tile according to the result of yFirst
+	// 	BasicCommands.moveUnitToTile(out, unit, newTile, yFirst(currentTile, newTile, unit));
 
-		if (unit.getName().equals("Young Flamewing")) {
-			BasicCommands.addPlayer1Notification(out, "Flamewing is flying!", 3);
-		}
+	// 	if (unit.getName().equals("Young Flamewing")) {
+	// 		BasicCommands.addPlayer1Notification(out, "Flamewing is flying!", 3);
+	// 	}
 
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	// 	try {
+	// 		Thread.sleep(2000);
+	// 	} catch (InterruptedException e) {
+	// 		e.printStackTrace();
+	// 	}
 
-		unit.setHasMoved(true);
-	}
+	// 	unit.setHasMoved(true);
+	// }
 
 	// Method to determine whether to move in the x or y direction first
-	private boolean yFirst(Tile currentTile, Tile newTile, Unit unit) {
-		Board board = gs.getBoard();
-		int dx = newTile.getTilex() - currentTile.getTilex();
-		int dy = newTile.getTiley() - currentTile.getTiley();
+	// private boolean yFirst(Tile currentTile, Tile newTile, Unit unit) {
+	// 	Board board = gs.getBoard();
+	// 	int dx = newTile.getTilex() - currentTile.getTilex();
+	// 	int dy = newTile.getTiley() - currentTile.getTiley();
 
-		if (Math.abs(dx) == 1 && Math.abs(dy) == 1) {
-			// Check for enemies along the path when moving x then y and y then x
-			Tile xFirstTile = board.getTile(currentTile.getTilex() + dx, currentTile.getTiley());
-			Tile yFirstTile = board.getTile(currentTile.getTilex(), currentTile.getTiley() + dy);
+	// 	if (Math.abs(dx) == 1 && Math.abs(dy) == 1) {
+	// 		// Check for enemies along the path when moving x then y and y then x
+	// 		Tile xFirstTile = board.getTile(currentTile.getTilex() + dx, currentTile.getTiley());
+	// 		Tile yFirstTile = board.getTile(currentTile.getTilex(), currentTile.getTiley() + dy);
 
-			boolean xFirstBlocked = xFirstTile.isOccupied() && xFirstTile.getUnit().getOwner() != unit.getOwner();
-			boolean yFirstBlocked = yFirstTile.isOccupied() && yFirstTile.getUnit().getOwner() != unit.getOwner();
+	// 		boolean xFirstBlocked = xFirstTile.isOccupied() && xFirstTile.getUnit().getOwner() != unit.getOwner();
+	// 		boolean yFirstBlocked = yFirstTile.isOccupied() && yFirstTile.getUnit().getOwner() != unit.getOwner();
 
-			// If the path is blocked in the x direction, try y first, and vice versa.
-			if (xFirstBlocked && !yFirstBlocked) {
-				return true; // Prioritize y if x is blocked.
-			} else if (!xFirstBlocked && yFirstBlocked) {
-				return false; // Prioritize x if y is blocked.
-			}
-		}
-		return false; // Default to false
-	}
+	// 		// If the path is blocked in the x direction, try y first, and vice versa.
+	// 		if (xFirstBlocked && !yFirstBlocked) {
+	// 			return true; // Prioritize y if x is blocked.
+	// 		} else if (!xFirstBlocked && yFirstBlocked) {
+	// 			return false; // Prioritize x if y is blocked.
+	// 		}
+	// 	}
+	// 	return false; // Default to false
+	// }
 
 
 
@@ -798,7 +760,7 @@ public class GameManager {
 		gs.addUnitstoBoard(unit);
 		System.out.println("Unit added to board: " + ( gs.getTotalUnits()));
 		// remove highlight from all tiles
-		removeHighlightFromAll();
+		boardManager.removeHighlightFromAll();
 
 		// draw unit on new tile and play summon animation
 		EffectAnimation effect = BasicObjectBuilders.loadEffect(StaticConfFiles.f1_summon);
@@ -885,7 +847,7 @@ public class GameManager {
         BasicCommands.playEffectAnimation(out, effect, gs.getHuman().getAvatar().getActiveTile(gs.getBoard()));
         notClickingCard();
         BasicCommands.addPlayer1Notification(out, "You gained +3 robustness!", 2);
-        removeHighlightFromAll();
+        boardManager.removeHighlightFromAll();
 
         try {
             Thread.sleep(1000);
@@ -939,7 +901,7 @@ public class GameManager {
 		
 		if (gameState.getCurrentPlayer() instanceof HumanPlayer &&
                 !validCast(card, tile)) {
-			removeHighlightFromAll();
+			boardManager.removeHighlightFromAll();
 			return;
 		}
 		// Remove the card from the player's hand

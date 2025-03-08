@@ -21,7 +21,7 @@ public class CardAction {
   private void preAction() {
 
     // CLear all highlighted tiles
-    gameState.gameManager.removeHighlightFromAll();
+    gameState.getBoardManager().removeHighlightFromAll();
 
     // Set the current card clicked to the card at the specified position in the
     // player's hand
@@ -38,7 +38,7 @@ public class CardAction {
 
     // Highlight the summon range of the current card clicked
     // Highlight the summon range of the current card clicked
-    gameState.gameManager.highlightSummonRange();
+    gameState.getBoardManager().highlightSummonRange();
 
     // Push the current card clicked to the action history
     gameState.getActionHistory().push(currentCard);

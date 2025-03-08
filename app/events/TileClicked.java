@@ -13,7 +13,7 @@ import structures.basic.cards.BeamShock;
 import structures.basic.cards.Card;
 import structures.basic.player.AIPlayer;
 import structures.basic.player.Player;
-
+import structures.manager.*;
 /**
  * Indicates that the user has clicked an object on the game canvas, in this case a tile.
  * The event returns the x (horizontal) and y (vertical) indices of the tile that was
@@ -29,7 +29,7 @@ import structures.basic.player.Player;
  *
  */
 public class TileClicked implements EventProcessor {
-
+	
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
@@ -81,7 +81,7 @@ public class TileClicked implements EventProcessor {
 	    if (gameState.getHuman().getMana() < card.getManacost()) {
 	        // Notify the player of insufficient mana
 	        BasicCommands.addPlayer1Notification(out, "Mana reserves depleted!", 2);
-	        gameState.gameManager.removeHighlightFromAll();
+	        gameState.getBoardManager().removeHighlightFromAll();
 	        gameState.gameManager.notClickingCard();
 	        return; // Exit the method early if mana is insufficient
 	    }
@@ -104,28 +104,28 @@ public class TileClicked implements EventProcessor {
 		// Early return if targetTile is null
 		if (targetTile == null) {
 			System.out.println("Target tile is null.");
-			gameState.gameManager.removeHighlightFromAll();
+			gameState.getBoardManager().removeHighlightFromAll();
 			return;
 		}
 		AIPlayer ai = (AIPlayer) gameState.getAi();
 		if (ai.getAiManager().getStunnedUnit()==unit) {
 			System.out.println("Unit is stunned.");
 			unit.setHasMoved(true);
-			gameState.gameManager.removeHighlightFromAll();
+			gameState.getBoardManager().removeHighlightFromAll();
 			gameState.gameManager.stunnedUnit(unit.getName());
 			return;
 		}
 
 		if (unit == null) {
 			System.out.println("Unit is null.");
-			gameState.gameManager.removeHighlightFromAll();
+			gameState.getBoardManager().removeHighlightFromAll();
 			return;
 		}
 
 		// Determine action based on tile's occupancy and highlight mode
 		if (!targetTile.isOccupied()) {
 			// Assuming all valid moves are already checked, directly move the unit
-			gameState.gameManager.updateUnitPositionAndMove(unit, targetTile);
+			gameState.getBoardManager().updateUnitPositionAndMove(unit, targetTile);
 			System.out.println("Unit " + unit.getId() + " moved to " + targetTile.getTilex() + ", " + targetTile.getTiley());
 		} else if (targetTile.getHighlightMode() == 2) {
 			// Directly handle attack as validity should have been ensured beforehand
@@ -151,7 +151,7 @@ public class TileClicked implements EventProcessor {
 			}
 
 			// Remove highlight from all tiles after action
-			gameState.gameManager.removeHighlightFromAll();
+			gameState.getBoardManager().removeHighlightFromAll();
 		}
 	}
 
@@ -160,15 +160,15 @@ public class TileClicked implements EventProcessor {
 		if (gameState.gameManager.isValidSummon(card, tile)) {
 			gameState.gameManager.castCardFromHand(card, tile);
 		} else {
-			gameState.gameManager.removeHighlightFromAll();
+			gameState.getBoardManager().removeHighlightFromAll();
 		}
 	}
 
 	// Highlight valid moves and attacks for unit
 	private void highlightUnitActions(GameState gameState, Unit unit, Tile tile) {
 		// Clear all highlighted tiles
-		gameState.gameManager.removeHighlightFromAll();
-
+		gameState.getBoardManager().removeHighlightFromAll();
+		
 		// Highlight move and attack range based on unit's turn state
 		if (!unit.hasAttacked() && !unit.hasMoved()) {
 			gameState.gameManager.highlightValidMoves(unit);
