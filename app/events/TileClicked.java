@@ -108,7 +108,7 @@ public class TileClicked implements EventProcessor {
 			return;
 		}
 		AIPlayer ai = (AIPlayer) gameState.getAi();
-		if (ai.stunnedUnit==unit) {
+		if (ai.getAiManager().getStunnedUnit()==unit) {
 			System.out.println("Unit is stunned.");
 			unit.setHasMoved(true);
 			gameState.getBoardManager().removeHighlightFromAll();

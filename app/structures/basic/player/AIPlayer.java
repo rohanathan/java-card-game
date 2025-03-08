@@ -1,37 +1,31 @@
 package structures.basic.player;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import commands.BasicCommands;
-import events.EndTurnClicked;
 import structures.GameState;
-import structures.basic.*;
-import structures.basic.cards.Card;
+import structures.basic.Unit;
 
-import java.util.*;
+import java.util.List;
 
-/**
- * AIPlayer class encapsulating AI logic for automated gameplay within the game.
- */
 public class AIPlayer extends Player {
-	private final GameState gameState;
-	public Unit stunnedUnit;
+	@JsonIgnore
+	private final AIManager aiManager;
 
 	public AIPlayer(GameState gameState) {
 		super();
-		this.gameState = gameState;
-		this.stunnedUnit = null;
+		this.aiManager = new AIManager(gameState, this);
+	}
+
+	public AIManager getAiManager() {
+		return aiManager;
 	}
 
 	public void takeTurn(ActorRef out, JsonNode message) {
-		notifyIfStunnedUnitRecovered(out);
-		makeBestMove();
-
-		if (!gameState.isGameOver) {
-			endTurn(out, message);
-		}
+		aiManager.takeTurn(out, message);
 	}
 
+<<<<<<< HEAD
 	private void notifyIfStunnedUnitRecovered(ActorRef out) {
 		if (stunnedUnit != null && stunnedUnit.getHealth() > 0) {
 			BasicCommands.addPlayer1Notification(out, stunnedUnit.getName() + " is not stunned anymore", 2);
@@ -385,10 +379,16 @@ public class AIPlayer extends Player {
 
 	private PossibleAttack findBestAttack(Set<PossibleAttack> attacks) {
 		return attacks.stream().max(Comparator.comparingInt(attack -> attack.moveQuality)).orElse(null);
+=======
+	@Override
+	public List<Unit> getUnits() {
+		return super.getUnits();
+>>>>>>> 818f81e47e69469129b0d4257d9e89094f180e5c
 	}
 
 	@Override
 	public String toString() {
-		return "AIPlayer";
+		return "AI Player";
 	}
+
 }
