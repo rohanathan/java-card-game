@@ -274,6 +274,4 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
 			gameState.getUnitManager().summonUnit(unit_conf, unit_id, card, tile, player);
 		}
     }
-
-
 }

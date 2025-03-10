@@ -15,6 +15,24 @@ import structures.basic.player.Player;
 import utils.BasicObjectBuilders;
 import structures.basic.cards.*;
 
+/**
+ * The BoardManager class is responsible for handling all board-related operations
+ * such as initializing the board, highlighting valid movements, updating tile highlights, 
+ * and managing unit positions.
+ *
+ * It interacts with the GameState and is responsible for ensuring 
+ * valid board interactions, including movement validation and spell casting.
+ *
+ * Responsibilities:
+ * - Initialize the game board.
+ * - Manage tile highlights for movement, attacks, and summoning.
+ * - Validate tile accessibility and adjacent tile conditions.
+ * - Handle unit movements and positioning.
+ * 
+ * This class ensures that the board state is updated dynamically based on the game rules.
+ * 
+ * @author Hemansh Solanki
+ */
 public class BoardManager {
     private final ActorRef out;
     private final GameState gameState;
@@ -26,24 +44,41 @@ public class BoardManager {
         this.gameState = gameState; 
 
     }
-    // initial board setup
-	public Board initializeBoard() {
-		Board board = new Board();
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 5; j++) {
-				Tile tile = BasicObjectBuilders.loadTile(i, j);
-				tile.setHighlightMode(0);
-				board.setTile(tile, i, j);
-				BasicCommands.drawTile(out, tile, 0);
-				try {
-					Thread.sleep(5);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return board;
-	}
+ /**
+ * Initializes the game board by creating a grid of tiles and rendering them on the UI.
+ * This method ensures that each tile is assigned a default highlight mode and is 
+ * properly displayed using the BasicCommands API.
+ *
+ * <p>The board consists of a 9x5 grid (width x height), where each tile is generated 
+ * using the BasicObjectBuilders utility. It sets each tile's default highlight mode to 0 
+ * (unhighlighted) and visually updates the UI.</p>
+ *
+ * <p>After initialization, the board is ready for unit placement and interaction.</p>
+ *
+ * @return A fully initialized Board object with all tiles set up.
+ */
+public Board initializeBoard() {
+    Board board = new Board();
+    for (int x = 0; x < 9; x++) {
+        for (int y = 0; y < 5; y++) {
+            Tile tile = BasicObjectBuilders.loadTile(x, y);
+            tile.setHighlightMode(0); // Default highlight mode: No highlight
+            board.setTile(tile, x, y);
+            
+            // Render tile on UI
+            BasicCommands.drawTile(out, tile, 0);
+            
+            // Prevent rapid execution by introducing a slight delay
+            try {
+                Thread.sleep(3);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Restore interrupt status
+                System.err.println("Board initialization interrupted: " + e.getMessage());
+            }
+        }
+    }
+    return board;
+}
     
     private boolean isEnemyOnTile(Tile tile, Player currentPlayer) {
 		return tile.isOccupied() && tile.getUnit().getOwner() != currentPlayer;
@@ -120,27 +155,48 @@ public class BoardManager {
 		return false;
 	}
 
-    
-    // remove highlight from all tiles
+/**
+ * Removes all highlight effects from tiles on the board.
+ *
+ * his method iterates through the entire game board (9x5 grid)
+ * and resets the highlight mode of every tile to 0 (unhighlighted).
+ * It ensures that previously highlighted tiles, whether for movement,
+ * attack, or spell casting, are cleared visually.
+ *
+ * Additionally, if the human player has cards in hand, it triggers
+ * the `notClickingCard()` method from `PlayerManager` to reset the 
+ * UI state for card selection.
+ */
 	public void removeHighlightFromAll() {
-		Board board = gameState.getBoard();
-		Tile[][] tiles = board.getTiles();
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 5; j++) {
-				if (tiles[i][j].getHighlightMode() != 0) {
-					Tile currentTile = tiles[i][j];
-					currentTile.setHighlightMode(0);
-					BasicCommands.drawTile(out, currentTile, 0);
+		Board gameBoard = gameState.getBoard();
+		Tile[][] tileGrid = gameBoard.getTiles();
+	
+		// Iterate over each tile and reset highlight mode
+		for (Tile[] row : tileGrid) {
+			for (Tile tile : row) {
+				if (tile.getHighlightMode() != 0) {
+					tile.setHighlightMode(0); // Reset highlight
+					BasicCommands.drawTile(out, tile, 0); // Update UI
 				}
 			}
 		}
+	
+		// Reset UI selection if human player has cards in hand
 		if (!gameState.getHuman().getHand().getCards().isEmpty()) {
 			gameState.getPlayerManager().notClickingCard();
 		}
 	}
-    
 
-    // helper method to update tile highlight
+/**
+ * Updates the highlight mode of a specified tile and refreshes the UI.
+ *
+ * This method applies a new highlight effect to a given tile,
+ * waits for a short delay (to ensure proper animation timing),
+ * and then visually updates the tile on the board.
+ *
+ * @param targetTile The tile to be highlighted.
+ * @param highlightMode The highlight mode (e.g., 0 for none, 1 for movement, 2 for attack).
+ */
 	public void updateTileHighlight(Tile tile, int tileHighlightMode) {
 		try {
 			Thread.sleep(20);
@@ -182,143 +238,204 @@ public class BoardManager {
 
 		return validTiles;
 	}
-    private void highlightAdjacentAttackTiles(Tile tile, Unit unit) {
-		Board board = gameState.getBoard();
-		int x = tile.getTilex();
-		int y = tile.getTiley();
-
-		int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
-		for (int[] direction : directions) {
-			int newX = x + direction[0];
-			int newY = y + direction[1];
-			if (isValidTile(newX, newY) && board.getTile(newX, newY).isOccupied() && board.getTile(newX, newY).getUnit().getOwner() != unit.getOwner()) {
-				updateTileHighlight(board.getTile(newX, newY), 2); // Highlight tile for attack
+	/**
+ 	* Highlights adjacent tiles that contain enemy units to indicate possible attack targets.
+ 	*
+ 	* @param centerTile The tile where the unit is currently located.
+ 	* @param activeUnit The unit that is initiating an attack.
+ 	*/
+	private void highlightAdjacentAttackTiles(Tile centerTile, Unit activeUnit) {
+		Board gameBoard = gameState.getBoard();
+		int tileX = centerTile.getTilex();
+		int tileY = centerTile.getTiley();
+	
+		int[][] attackDirections = {
+			{-1, 0}, {1, 0}, {0, -1}, {0, 1}, 
+			{-1, -1}, {1, -1}, {-1, 1}, {1, 1} // Includes diagonal attack positions
+		};
+	
+		for (int[] direction : attackDirections) {
+			int adjacentX = tileX + direction[0];
+			int adjacentY = tileY + direction[1];
+	
+			if (isValidTile(adjacentX, adjacentY)) {
+				Tile adjacentTile = gameBoard.getTile(adjacentX, adjacentY);
+	
+				// Check if tile is occupied by an enemy unit
+				if (adjacentTile.isOccupied() && adjacentTile.getUnit().getOwner() != activeUnit.getOwner()) {
+					updateTileHighlight(adjacentTile, 2); // Apply attack highlight
+				}
 			}
 		}
 	}
+	
     public void performHighlightAdjacentAttackTiles(Tile tile, Unit unit) {
         highlightAdjacentAttackTiles(tile, unit);
     }
     
-    // Returns the set of valid tiles for summoning units
+/**
+ * Identifies valid tiles for summoning new units based on adjacency rules.
+ *
+ * Checks all tiles on the board and selects those that are unoccupied
+ * and adjacent to an allied unit.
+ *
+ * @return A set of valid tiles where the player can summon units.
+ */
 	public Set<Tile> getValidSummonTiles() {
-		Player player = gameState.getCurrentPlayer();
-		Set<Tile> validTiles = new HashSet<>();
-		Tile[][] tiles = gameState.getBoard().getTiles();
-		for (int i = 0; i < tiles.length; i++) {
-			for (int j = 0; j < tiles[i].length; j++) {
-				Tile currentTile = tiles[i][j];
-				if (isAdjacentToAlly(i, j, player) && !currentTile.isOccupied()) {
-					validTiles.add(currentTile);
-				}
-			}
-		}
-		return validTiles;
-	}
-    // highlight tiles for summoning units
+    	Player currentPlayer = gameState.getCurrentPlayer();
+    	Set<Tile> summonableTiles = new HashSet<>();
+    	Tile[][] boardTiles = gameState.getBoard().getTiles();
+
+    	// Iterate through each tile and check if it's adjacent to an ally
+    	for (Tile[] row : boardTiles) {
+        	for (Tile potentialTile : row) {
+            	if (isAdjacentToAlly(potentialTile.getTilex(), potentialTile.getTiley(), currentPlayer) 
+                	&& !potentialTile.isOccupied()) {
+                	summonableTiles.add(potentialTile);
+            	}
+        	}
+	    }  	
+    return summonableTiles;
+}
+/**
+ * Highlights all valid tiles where the current player can summon a unit.
+ *
+ * <p>Uses the summoning rules to determine eligible tiles and updates their 
+ * visual appearance to indicate possible summoning locations.</p>
+ */
 	public void highlightSummonRange() {
 		Set<Tile> validTiles = getValidSummonTiles();
 		validTiles.forEach(tile -> updateTileHighlight(tile, 1));
 	}
-    // Check for spell range 
-	public Set<Tile> getSpellRange(Card card) {
-	    Set<Tile> validTiles = new HashSet<>();
-	    Tile[][] tiles = gameState.getBoard().getTiles();
 
-	    if (card.getCardname().equals("Dark Terminus")) {
-	        for (int i = 0; i < tiles.length; i++) {
-	            for (int j = 0; j < tiles[i].length; j++) {
-	                Tile currentTile = tiles[i][j];
-	                Unit unit = currentTile.getUnit();
-	                
-	                // Check if the tile is adjacent to a friendly unit and not occupied
-	                if (unit != null && !(unit.getOwner() instanceof HumanPlayer) && !unit.getName().equals("AI Avatar")) {
-	                    validTiles.add(currentTile);
-	                }
-	            }
-	        }
-	    }
-	    
-	    if (card.getCardname().equals("Wraithling Swarm")) {
-	    		return getValidSummonTiles();
-	    }
-	    
-	    if (card.getCardname().equals("Beamshock")) {
-	    	List<Unit> humanUnits = gameState.getHuman().getUnits();
-			Unit u = humanUnits.stream().max(Comparator.comparingInt(Unit::getAttack)).orElse(null);
-			validTiles.add(u.getActiveTile(gameState.getBoard()));
-        }
-	    if (card.getCardname().equals("Truestrike")) {
-    		validTiles.add(gameState.getHuman().getAvatar().getActiveTile(gameState.getBoard()));
-        }
-	    if (card.getCardname().equals("Sundrop Elixir")) {
-	    	//could potentially change for different units as well
-    		validTiles.add(gameState.getAi().getAvatar().getActiveTile(gameState.getBoard()));
-        }
-	    
-	    return validTiles;
-	}
-    // Method to actually move the unit to the new tile
+/**
+ * Determines the valid tiles where a given spell can be cast.
+ *
+ * <p>Different spells have unique targeting rules. This method 
+ * evaluates the board state and identifies all legal spell targets.</p>
+ *
+ * @param card The spell card to check for valid casting locations.
+ * @return A set of tiles where the spell can be legally cast.
+ */	
+public Set<Tile> getSpellRange(Card card) {
+    Set<Tile> spellTargetTiles = new HashSet<>();
+    Tile[][] boardTiles = gameState.getBoard().getTiles();
+
+    switch (card.getCardname()) {
+        case "Dark Terminus":
+            for (Tile[] row : boardTiles) {
+                for (Tile potentialTile : row) {
+                    Unit occupyingUnit = potentialTile.getUnit();
+
+                    // Check if the tile has an AI-controlled unit (excluding AI Avatar)
+                    if (occupyingUnit != null && !(occupyingUnit.getOwner() instanceof HumanPlayer) 
+                        && !occupyingUnit.getName().equals("AI Avatar")) {
+                        spellTargetTiles.add(potentialTile);
+                    }
+                }
+            }
+            break;
+
+        case "Wraithling Swarm":
+            return getValidSummonTiles();
+
+        case "Beamshock":
+            List<Unit> humanUnits = gameState.getHuman().getUnits();
+            Unit strongestUnit = humanUnits.stream()
+                    .max(Comparator.comparingInt(Unit::getAttack))
+                    .orElse(null);
+            if (strongestUnit != null) {
+                spellTargetTiles.add(strongestUnit.getActiveTile(gameState.getBoard()));
+            }
+            break;
+
+        case "Truestrike":
+            spellTargetTiles.add(gameState.getHuman().getAvatar().getActiveTile(gameState.getBoard()));
+            break;
+
+        case "Sundrop Elixir":
+            spellTargetTiles.add(gameState.getAi().getAvatar().getActiveTile(gameState.getBoard()));
+            break;
+    }
+
+    return spellTargetTiles;
+}
+
+/**
+ * Moves a unit to the specified tile, updating its position on the board.
+ *
+ * @param unit The unit that is being moved.
+ * @param newTile The target tile where the unit will be moved.
+ */
 	public void updateUnitPositionAndMove(Unit unit, Tile newTile) {
-		if (newTile.getHighlightMode() != 1 && gameState.getCurrentPlayer() instanceof HumanPlayer) {
-			System.out.println("New tile is not highlighted for movement");
-			removeHighlightFromAll();
-			return;
-		}
+    	if (newTile.getHighlightMode() != 1 && gameState.getCurrentPlayer() instanceof HumanPlayer) {
+        	System.out.println("Invalid move: Tile is not highlighted for movement.");
+        	removeHighlightFromAll();
+        	return;
+    	}
 
-		Board board = gameState.getBoard();
+    	Board gameBoard = gameState.getBoard();
+    	Tile previousTile = unit.getActiveTile(gameBoard);
 
-		// get current tile
-		Tile currentTile = unit.getActiveTile(board);
+    	// Remove unit from previous tile and update new position
+    	previousTile.removeUnit();
+    	newTile.setUnit(unit);
+    	unit.setPositionByTile(newTile);
 
-		// update unit position
-		currentTile.removeUnit();
-		newTile.setUnit(unit);
-		unit.setPositionByTile(newTile);
+    	// Clear highlights
+    	removeHighlightFromAll();
 
-		// remove highlight from all tiles
-		removeHighlightFromAll();
+    	try {
+        	Thread.sleep(30);
+    	} catch (InterruptedException e) {
+        	Thread.currentThread().interrupt();
+    	}
 
-		try {Thread.sleep(30);} catch (InterruptedException e) {e.printStackTrace();}
+    	// Move unit visually on UI
+    	BasicCommands.moveUnitToTile(out, unit, newTile, determineMovementPath(previousTile, newTile, unit));
 
-		// Move unit to tile according to the result of yFirst
-		BasicCommands.moveUnitToTile(out, unit, newTile, yFirst(currentTile, newTile, unit));
+    	if ("Young Flamewing".equals(unit.getName())) {
+        	BasicCommands.addPlayer1Notification(out, "Flamewing is flying!", 3);
+    	}
 
-		if (unit.getName().equals("Young Flamewing")) {
-			BasicCommands.addPlayer1Notification(out, "Flamewing is flying!", 3);
-		}
+    	try {
+        	Thread.sleep(2000);
+    	} catch (InterruptedException e) {
+        	Thread.currentThread().interrupt();
+    	}
 
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		unit.setHasMoved(true);
+    	unit.setHasMoved(true);
 	}
 
-    // Method to determine whether to move in the x or y direction first
-	private boolean yFirst(Tile currentTile, Tile newTile, Unit unit) {
-		Board board = gameState.getBoard();
-		int dx = newTile.getTilex() - currentTile.getTilex();
-		int dy = newTile.getTiley() - currentTile.getTiley();
+/**
+ * Determines whether the unit should move along the y-axis before the x-axis.
+ *
+ * @param startTile The tile where the unit is currently located.
+ * @param destinationTile The tile where the unit is moving.
+ * @param unit The unit that is moving.
+ * @return {@code true} if the unit should move in the y-direction first, otherwise {@code false}.
+ */
+	private boolean determineMovementPath(Tile startTile, Tile destinationTile, Unit unit) {
+    	Board gameBoard = gameState.getBoard();
+    	int deltaX = destinationTile.getTilex() - startTile.getTilex();
+    	int deltaY = destinationTile.getTiley() - startTile.getTiley();
 
-		if (Math.abs(dx) == 1 && Math.abs(dy) == 1) {
-			// Check for enemies along the path when moving x then y and y then x
-			Tile xFirstTile = board.getTile(currentTile.getTilex() + dx, currentTile.getTiley());
-			Tile yFirstTile = board.getTile(currentTile.getTilex(), currentTile.getTiley() + dy);
+    	if (Math.abs(deltaX) == 1 && Math.abs(deltaY) == 1) {
+        	// Identify tiles in both movement directions
+        	Tile xPathTile = gameBoard.getTile(startTile.getTilex() + deltaX, startTile.getTiley());
+        	Tile yPathTile = gameBoard.getTile(startTile.getTilex(), startTile.getTiley() + deltaY);
 
-			boolean xFirstBlocked = xFirstTile.isOccupied() && xFirstTile.getUnit().getOwner() != unit.getOwner();
-			boolean yFirstBlocked = yFirstTile.isOccupied() && yFirstTile.getUnit().getOwner() != unit.getOwner();
+        	boolean xBlocked = xPathTile.isOccupied() && xPathTile.getUnit().getOwner() != unit.getOwner();
+        	boolean yBlocked = yPathTile.isOccupied() && yPathTile.getUnit().getOwner() != unit.getOwner();
 
-			// If the path is blocked in the x direction, try y first, and vice versa.
-			if (xFirstBlocked && !yFirstBlocked) {
-				return true; // Prioritize y if x is blocked.
-			} else if (!xFirstBlocked && yFirstBlocked) {
-				return false; // Prioritize x if y is blocked.
-			}
-		}
-		return false; // Default to false
+        	// Prioritize movement based on blocked paths
+        	if (xBlocked && !yBlocked) {
+            	return true; // Prioritize y-direction
+        	} else if (!xBlocked && yBlocked) {
+            	return false; // Prioritize x-direction
+        	}
+    	}
+    	return false; // Default behavior
 	}
 }
 // initializeBoard
