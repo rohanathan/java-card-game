@@ -79,81 +79,121 @@ public Board initializeBoard() {
     }
     return board;
 }
-    
-    private boolean isEnemyOnTile(Tile tile, Player currentPlayer) {
-		return tile.isOccupied() && tile.getUnit().getOwner() != currentPlayer;
-	}
+    /**
+     * Checks if a given tile contains an enemy unit.
+     *
+     * @param targetTile The tile being examined.
+     * @param player The current player whose perspective is considered.
+     * @return True if an enemy unit occupies the tile, false otherwise.
+     */    
+    private boolean hasEnemyUnit(Tile targetTile, Player player) {
+        return targetTile.isOccupied() && targetTile.getUnit().getOwner() != player;
+    }
 
-    // Checks if a tile position is within the boundaries of the game board
-	private boolean isValidTile(int x, int y) {
-		Tile[][] board = gameState.getBoard().getTiles();
-		return x >= 0 && y >= 0 && x < board.length && y < board[x].length;
-	}
+    /**
+     * Verifies whether a tile position is within the valid boundaries of the game board.
+     *
+     * @param x The x-coordinate of the tile.
+     * @param y The y-coordinate of the tile.
+     * @return True if the tile is within the board's dimensions, false otherwise.
+     */
+		private boolean isValidTile(int x, int y) {
+			Tile[][] gridTiles = gameState.getBoard().getTiles();
+			return (x >= 0 && y >= 0 && x < gridTiles.length && y < gridTiles[x].length);
+		}
 
-    // Helper method to add a valid tile to the set of valid actions if the conditions are met
-	private void addValidTileInDirection(Tile[][] board, Unit unit, int dx, int dy, Set<Tile> validTiles, Player currentPlayer) {
-		int startX = unit.getPosition().getTilex();
-		int startY = unit.getPosition().getTiley();
-		int endX = startX + dx;
-		int endY = startY + dy;
+    /**
+     * Identifies and adds valid movement tiles for a unit, considering obstacles and enemy units.
+     *
+     * @param gameGrid The 2D board grid.
+     * @param movingUnit The unit attempting to move.
+     * @param deltaX Movement along the x-axis.
+     * @param deltaY Movement along the y-axis.
+     * @param potentialMoves Set to store valid movement tiles.
+     * @param activePlayer The player controlling the unit.
+     */
+	private void detectValidMoveTiles(Tile[][] gameGrid, Unit movingUnit, int deltaX, int deltaY,
+										Set<Tile> potentialMoves, Player activePlayer) {
+		int originX = movingUnit.getPosition().getTilex();
+		int originY = movingUnit.getPosition().getTiley();
+		int targetX = originX + deltaX;
+		int targetY = originY + deltaY;
 
-		// Check each step along the path for enemy occupation
-		int pathLength = Math.max(Math.abs(dx), Math.abs(dy));
-		for (int step = 1; step <= pathLength; step++) {
-			int stepX = startX + (int)Math.signum(dx) * step;
-			int stepY = startY + (int)Math.signum(dy) * step;
+		int movementRange = Math.max(Math.abs(deltaX), Math.abs(deltaY));
 
-			// Additional check for diagonal moves
-			if (Math.abs(dx) == 1 && Math.abs(dy) == 1 && step == 1) {
-				if (isValidTile(startX + dx, startY) && isValidTile(startX, startY + dy)) {
-					Tile orthogonal1 = board[startX + dx][startY];
-					Tile orthogonal2 = board[startX][startY + dy];
-					if (isEnemyOnTile(orthogonal1, currentPlayer) && isEnemyOnTile(orthogonal2, currentPlayer)) {
-						// If both orthogonal tiles are blocked by enemy units, the diagonal move is invalid
-						return;
-					}
-				}
-				else {
-					// One of the orthogonal tiles is out of bounds
+		// Check step-by-step movement towards the target tile
+		for (int step = 1; step <= movementRange; step++) {
+			int stepX = originX + (int) Math.signum(deltaX) * step;
+			int stepY = originY + (int) Math.signum(deltaY) * step;
+
+			// Additional verification for diagonal moves
+			if (Math.abs(deltaX) == 1 && Math.abs(deltaY) == 1 && step == 1) {
+				if (isWithinBoardLimits(originX + deltaX, originY) && isWithinBoardLimits(originX, originY + deltaY)) {
+					Tile firstTile = gameGrid[originX + deltaX][originY];
+					Tile secondTile = gameGrid[originX][originY + deltaY];
+
+					// Ensure diagonal moves are not blocked by enemy units
+					if (hasEnemyUnit(firstTile, activePlayer) && hasEnemyUnit(secondTile, activePlayer)) {
 					return;
-				}
-			}
-
-			// If any step along the path is invalid, abort adding this tile
-			if (!isValidTile(stepX, stepY) || isEnemyOnTile(board[stepX][stepY], currentPlayer)) {
-				return;
-			}
-		}
-
-
-        
-		// If the path is clear, add the final tile to validTiles
-		if (isValidTile(endX, endY)) {
-			Tile tile = board[endX][endY];
-			if (!tile.isOccupied()) { // Ensure the final tile is not occupied
-				validTiles.add(tile);
-			}
-		}
-	}
-
-    // Check if a tile is adjacent to a friendly unit of the specified player
-	private boolean isAdjacentToAlly(int x, int y, Player player) {
-		Tile[][] tiles = gameState.getBoard().getTiles();
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dy = -1; dy <= 1; dy++) {
-				if (dx == 0 && dy == 0) continue; // Skip the current tile
-				int adjX = x + dx;
-				int adjY = y + dy;
-				if (isValidTile(adjX, adjY)) {
-					Tile adjTile = tiles[adjX][adjY];
-					if (adjTile.isOccupied() && adjTile.getUnit().getOwner() == player) {
-						return true;
 					}
-				}
+				} else {
+					return;
 			}
 		}
-		return false;
+
+		// If any tile along the path is invalid or blocked, stop checking
+		if (!isWithinBoardLimits(stepX, stepY) || hasEnemyUnit(gameGrid[stepX][stepY], activePlayer)) {
+			return;
+		}
 	}
+
+
+		// If movement is valid, add the final tile to the set of potential moves
+		if (isWithinBoardLimits(targetX, targetY)) {
+			Tile destinationTile = gameGrid[targetX][targetY];
+		if (!destinationTile.isOccupied()) {
+			potentialMoves.add(destinationTile);
+			}
+		}
+	}
+    /**
+     * Verifies whether a tile position is within the valid boundaries of the game board.
+     *
+     * @param x The x-coordinate of the tile.
+     * @param y The y-coordinate of the tile.
+     * @return True if the tile is within the board's dimensions, false otherwise.
+     */
+    private boolean isWithinBoardLimits(int x, int y) {
+        Tile[][] gridTiles = gameState.getBoard().getTiles();
+        return (x >= 0 && y >= 0 && x < gridTiles.length && y < gridTiles[x].length);
+    }
+
+    /**
+     * Determines whether a specified tile is adjacent to a friendly unit.
+     *
+     * @param posX The x-coordinate of the tile.
+     * @param posY The y-coordinate of the tile.
+     * @param activePlayer The player checking for adjacent allies.
+     * @return True if an adjacent tile contains a friendly unit, false otherwise.
+     */
+	private boolean hasFriendlyAdjacent(int posX, int posY, Player activePlayer) {
+        Tile[][] boardTiles = gameState.getBoard().getTiles();
+        
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue; // Skip the current tile
+                int adjX = posX + dx;
+                int adjY = posY + dy;
+                if (isWithinBoardLimits(adjX, adjY)) {
+                    Tile adjacentTile = boardTiles[adjX][adjY];
+                    if (adjacentTile.isOccupied() && adjacentTile.getUnit().getOwner() == activePlayer) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
 /**
  * Removes all highlight effects from tiles on the board.
@@ -228,12 +268,12 @@ public Board initializeBoard() {
 
 		// Handle immediate adjacent tiles (including diagonals)
 		for (int[] direction : directions) {
-			addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
+			detectValidMoveTiles(board, unit, direction[0], direction[1], validTiles, currentPlayer);
 		}
 
 		// Handle two tiles away horizontally or vertically, making sure not to pass through enemy units
 		for (int[] direction : extendedDirections) {
-			addValidTileInDirection(board, unit, direction[0], direction[1], validTiles, currentPlayer);
+			detectValidMoveTiles(board, unit, direction[0], direction[1], validTiles, currentPlayer);
 		}
 
 		return validTiles;
@@ -289,7 +329,7 @@ public Board initializeBoard() {
     	// Iterate through each tile and check if it's adjacent to an ally
     	for (Tile[] row : boardTiles) {
         	for (Tile potentialTile : row) {
-            	if (isAdjacentToAlly(potentialTile.getTilex(), potentialTile.getTiley(), currentPlayer) 
+            	if (hasFriendlyAdjacent(potentialTile.getTilex(), potentialTile.getTiley(), currentPlayer) 
                 	&& !potentialTile.isOccupied()) {
                 	summonableTiles.add(potentialTile);
             	}
@@ -443,7 +483,7 @@ public Set<Tile> getSpellRange(Card card) {
 // updateTileHighlight
 // highlightAdjacentAttackTiles
 // isValidTile
-// isEnemyOnTile
+// hasEnemyUnit
 // getValidMoves
 // getValidSummonTiles
 // highlightSummonRange
