@@ -42,6 +42,7 @@ public class AIMoveHandler {
 
             executeAttack(best);
             attacks = gatherPossibleAttacks(); // Refresh list
+            
         }
     }
 
