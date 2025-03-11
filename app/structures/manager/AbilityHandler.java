@@ -148,7 +148,7 @@ public class AbilityHandler {
 
         // Find the correct position of the card in hand
         if (selectedCardPosition == 0) {
-            for (int i = 1; i <= playerHand.getNumberOfCardsInHand(); i++) {
+            for (int i = 1; i <= playerHand.getNumCardsInHand(); i++) {
                 if (playerHand.getCardAtPosition(i).equals(spellCard)) {
                     selectedCardPosition = i;
                     break;
@@ -159,11 +159,11 @@ public class AbilityHandler {
         // Remove the card from the player's hand and update UI if it's a HumanPlayer
         if (currentPlayer instanceof HumanPlayer) {
             BasicCommands.deleteCard(out, selectedCardPosition + 1);
-            playerHand.removeCardAtPosition(selectedCardPosition);
+            playerHand.removeCard(selectedCardPosition);
             gameState.getPlayerManager().updateHandPositions(playerHand);
             gameState.getPlayerManager().notClickingCard();
         } else {
-            playerHand.removeCardAtPosition(selectedCardPosition);
+            playerHand.removeCard(selectedCardPosition);
         }
 
         // Process spell effects based on the card name
@@ -330,7 +330,7 @@ public class AbilityHandler {
 
         // If hand position is not set, locate the card in the hand by iterating over the cards
         if (handPosition == 0) {
-            for (int i = 1; i <= hand.getNumberOfCardsInHand(); i++) {
+            for (int i = 1; i <= hand.getNumCardsInHand(); i++) {
                 if (hand.getCardAtPosition(i).equals(card)) {
                     handPosition = i;
                     break;
@@ -352,10 +352,10 @@ public class AbilityHandler {
         if (player instanceof HumanPlayer) {
             // Remove card from hand and delete from UI
             BasicCommands.deleteCard(out, handPosition + 1);
-            hand.removeCardAtPosition(handPosition);
+            hand.removeCard(handPosition);
             gameState.getPlayerManager().updateHandPositions(hand);
         } else {
-            hand.removeCardAtPosition(handPosition);
+            hand.removeCard(handPosition);
         }
 
         // If the card represents a creature, summon the corresponding unit onto the board

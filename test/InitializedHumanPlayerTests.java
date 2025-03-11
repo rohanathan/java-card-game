@@ -38,7 +38,7 @@ public class InitializedHumanPlayerTests {
 
     initalizeProcessor.processEvent(null, gameState, eventMessage); // send it to the initalize event processor
 
-    assertEquals(gameState.getHuman().getHand().getNumberOfCardsInHand(), 3);
+    assertEquals(gameState.getHuman().getHand().getNumCardsInHand(), 3);
 
   }
 

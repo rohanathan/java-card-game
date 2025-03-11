@@ -1,6 +1,5 @@
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -41,7 +40,7 @@ public class InitializedAiPlayerTests {
 
     initalizeProcessor.processEvent(null, gameState, eventMessage); // send it to the initalize event processor
 
-    assertEquals(gameState.getAi().getHand().getNumberOfCardsInHand(), 3);
+    assertEquals(gameState.getAi().getHand().getNumCardsInHand(), 3);
 
   }
 

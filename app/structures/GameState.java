@@ -118,7 +118,7 @@ public class GameState {
 	 */
 	public void handleCardManagement() {
 		try {
-			if (currentPlayer.getHand().getNumberOfCardsInHand() >= 6) {
+			if (currentPlayer.getHand().getNumCardsInHand() >= 6) {
 				// Discard the top card from the hand if it's at maximum size.
 				if((currentPlayer.getDeck()).getDeck().isEmpty()) {
 					} else {

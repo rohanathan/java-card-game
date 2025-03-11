@@ -77,7 +77,7 @@ public class PlayerManager {
 					BasicCommands.addPlayer1Notification(out, "Card reserves depleted!", 2);
 					return;
 				}
-				int handPosition = player.getHand().getNumberOfCardsInHand();
+				int handPosition = player.getHand().getNumCardsInHand();
 				BasicCommands.drawCard(out, cardDrawn, handPosition, 0);
 				try {
 					Thread.sleep(1000);
@@ -104,19 +104,19 @@ public class PlayerManager {
 		gameState.setActiveCard(null);
 		gameState.setCurrentCardPosition(0);
 
-		for (int i = 1; i <= gameState.getHuman().getHand().getNumberOfCardsInHand(); i++) {
+		for (int i = 1; i <= gameState.getHuman().getHand().getNumCardsInHand(); i++) {
 			Card card = gameState.getHuman().getHand().getCardAtPosition(i);
 			BasicCommands.drawCard(out, card, i, 0);
 		}
 	}
 	// Method for updating hand positions following a card removal
 	public void updateHandPositions(Hand hand) {
-		if (hand.getNumberOfCardsInHand() == 0) {
+		if (hand.getNumCardsInHand() == 0) {
 			BasicCommands.deleteCard(out, 1);
 		}
 
 		// Iterate over the remaining cards in the hand
-		for (int i = 0; i < hand.getNumberOfCardsInHand(); i++) {
+		for (int i = 0; i < hand.getNumCardsInHand(); i++) {
 			// Draw each card in its new position, positions are usually 1-indexed on the UI
 			BasicCommands.deleteCard(out, i + 2);
 			BasicCommands.drawCard(out, hand.getCardAtIndex(i), i + 1, 0);
