@@ -56,44 +56,31 @@ public class AbilityHandler {
 			}
 			if (card.getCardname().equals("Wraithling Swarm")) {
 				validCastTiles.forEach(tile -> gameState.getBoardManager().updateTileHighlight(tile, 1));
-				BasicCommands.addPlayer1Notification(out, "You have 3 wraithlingameState to place", 2);
+				BasicCommands.addPlayer1Notification(out, "You have 3 wraithlings to place", 2);
 				return;
 			}
 		}
 
 		System.out.println("Highlighting spellrange " + card.getCardname());
 	}
-    // // Method for casting the Horn of the Forsaken spell 
-	// public void HornOfTheForesaken(Card card) { 
-    //     EffectAnimation effect = BasicObjectBuilders.loadEffect(StaticConfFiles.something); 
-    //     BasicCommands.playEffectAnimation(out, effect, gameState.getHuman().getAvatar().getActiveTile(gameState.getBoard())); 
-    //     gameState.getPlayerManager().notClickingCard(); 
-    //     BasicCommands.addPlayer1Notification(out, "You gained +3 robustness!", 2); 
-    //     gameState.getBoardManager().removeHighlightFromAll(); 
- 
-    //     try { 
-    //         Thread.sleep(1000); 
-    //     } catch (InterruptedException e) { 
-    //         e.printStackTrace(); 
-    //     } 
-    // } 
+
  // Method for casting the Wraithling Swarm spell
- public void WraithlingameStatewarm(Card card, Tile tile) {
-    // Number of WraithlingameState to summon
+ public void WraithlingSwarm(Card card, Tile tile) {
+    // Number of wraithlings to summon
     Wraithling.summonWraithlingToTile(tile, out, gameState);
     HumanPlayer player = (HumanPlayer) gameState.getHuman();
     player.setWraithlingSwarmCounter(player.getWraithlingSwarmCounter() - 1);
 
-    // If there are more WraithlingameState to summon, push the card to action history
+    // If there are more Wraithlings to summon, push the card to action history
     if (player.getWraithlingSwarmCounter() > 0) {
         // Highlight tiles for summoning
         highlightSpellRange(card, gameState.getCurrentPlayer());
-        BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlingameState", 5);
+        BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlings", 5);
         gameState.getActionHistory().push(card);
         gameState.getPlayerManager().modifyPlayerMana(gameState.getCurrentPlayer(), gameState.getCurrentPlayer().getMana() + card.getManacost());
     } else {
         // Remove highlight from all tiles and update hand positions
-        BasicCommands.addPlayer1Notification(out, "All wraithlingameState summoned!", 5);
+        BasicCommands.addPlayer1Notification(out, "All wraithlings summoned!", 5);
         player.setWraithlingSwarmCounter(3);
     }
 }
@@ -151,7 +138,7 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
         }
     }
     if (card.getCardname().equals("Wraithling Swarm")) {
-        WraithlingameStatewarm(card, tile);
+        WraithlingSwarm(card, tile);
     }
     if (card.getCardname().equals("Beamshock")) {
         BeamShock.stunUnit(gameState);
@@ -185,7 +172,7 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
         HumanPlayer player = (HumanPlayer) gameState.getHuman();
 
         // Reset the Wraithling Swarm counter and decrease mana as swarm counter < 3 indicates
-        // that the player has started but not finished summoning all 3 WraithlingameState
+        // that the player has started but not finished summoning all 3 Wraithlings
         if (player.getWraithlingSwarmCounter() < 3) {
             BasicCommands.addPlayer1Notification(out, "Wraithling Swarm spell broken! Choose another tile!", 3);
 
