@@ -132,12 +132,12 @@ public class TileClicked implements EventProcessor {
 			System.out.println("Attacking unit on tile " + targetTile.getTilex() + ", " + targetTile.getTiley());
 			Tile attackerTile = unit.getActiveTile(gameState.getBoard());
 
-			if (gameState.getCombatHandler().isAttackable(attackerTile, targetTile)) {
+			if (gameState.getCombatHandler().isWithinAttackRange(attackerTile, targetTile)) {
 				// Attack adjacent unit
 				if (targetTile.isOccupied()) {
 					System.out.println("Target tile is occupied by " + targetTile.getUnit());
 				}
-				gameState.getCombatHandler().attack(unit, targetTile.getUnit());
+				gameState.getCombatHandler().performAttack(unit, targetTile.getUnit());
 				unit.setHasAttacked(true);
 				unit.setHasMoved(true);
 			} else {
@@ -174,7 +174,7 @@ public class TileClicked implements EventProcessor {
 			gameState.getCombatHandler().highlightValidMoves(unit);
 		// Highlight attack range only, if unit has moved but not attacked
 		} else if (unit.hasMoved()) {
-			gameState.getCombatHandler().highlightAttackRange(unit);
+			gameState.getCombatHandler().highlightPotentialAttacks(unit);
 		}
 	}
 }

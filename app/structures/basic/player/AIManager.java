@@ -12,10 +12,10 @@ import structures.basic.cards.Card;
 /**
  * AIManager is responsible for coordinating AI decision-making processes, including movement,
  * attack execution, and card selection during its turn.
- * <p>
+ * 
  * It delegates actions to {@link AIMoveHandler} for movement and attacks and 
  * {@link AICardSelector} for card-based decisions.
- * </p>
+ * 
  */
 
 public class AIManager {

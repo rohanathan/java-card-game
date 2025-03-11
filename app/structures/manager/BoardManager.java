@@ -49,11 +49,11 @@ public class BoardManager {
  * This method ensures that each tile is assigned a default highlight mode and is 
  * properly displayed using the BasicCommands API.
  *
- * <p>The board consists of a 9x5 grid (width x height), where each tile is generated 
+ * The board consists of a 9x5 grid (width x height), where each tile is generated 
  * using the BasicObjectBuilders utility. It sets each tile's default highlight mode to 0 
- * (unhighlighted) and visually updates the UI.</p>
+ * (unhighlighted) and visually updates the UI.
  *
- * <p>After initialization, the board is ready for unit placement and interaction.</p>
+ * After initialization, the board is ready for unit placement and interaction.
  *
  * @return A fully initialized Board object with all tiles set up.
  */
@@ -254,7 +254,7 @@ public Board initializeBoard() {
 		Set<Tile> validTiles = new HashSet<>();
 
 		// Skip calculation if unit is provoked or has moved/attacked this turn
-		if (gameState.getCombatHandler().checkProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
+		if (gameState.getCombatHandler().isUnitProvoked(unit) || unit.hasMoved() || unit.hasAttacked()) {
 			return validTiles;
 		}
 
@@ -340,8 +340,8 @@ public Board initializeBoard() {
 /**
  * Highlights all valid tiles where the current player can summon a unit.
  *
- * <p>Uses the summoning rules to determine eligible tiles and updates their 
- * visual appearance to indicate possible summoning locations.</p>
+ * Uses the summoning rules to determine eligible tiles and updates their 
+ * visual appearance to indicate possible summoning locations.
  */
 	public void highlightSummonRange() {
 		Set<Tile> validTiles = getValidSummonTiles();
@@ -351,8 +351,8 @@ public Board initializeBoard() {
 /**
  * Determines the valid tiles where a given spell can be cast.
  *
- * <p>Different spells have unique targeting rules. This method 
- * evaluates the board state and identifies all legal spell targets.</p>
+ * Different spells have unique targeting rules. This method 
+ * evaluates the board state and identifies all legal spell targets.
  *
  * @param card The spell card to check for valid casting locations.
  * @return A set of tiles where the spell can be legally cast.

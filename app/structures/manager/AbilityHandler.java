@@ -65,7 +65,7 @@ public class AbilityHandler {
 	}
 
  // Method for casting the Wraithling Swarm spell
- public void WraithlingSwarm(Card card, Tile tile) {
+ public void handleWraithlingSwarmSpell(Card card, Tile tile) {
     // Number of wraithlings to summon
     Wraithling.summonWraithlingToTile(tile, out, gameState);
     HumanPlayer player = (HumanPlayer) gameState.getHuman();
@@ -138,7 +138,7 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
         }
     }
     if (card.getCardname().equals("Wraithling Swarm")) {
-        WraithlingSwarm(card, tile);
+        handleWraithlingSwarmSpell(card, tile);
     }
     if (card.getCardname().equals("Beamshock")) {
         BeamShock.stunUnit(gameState);

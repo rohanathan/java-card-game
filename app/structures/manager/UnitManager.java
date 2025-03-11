@@ -40,9 +40,9 @@ public class UnitManager {
  * Sets up the avatar for a given player on the specified board, initializing
  * its position, health, and attack stats, then rendering it on the UI.
  *
- * <p>If the player is a HumanPlayer, the avatar spawns at (1,2); otherwise,
+ * If the player is a HumanPlayer, the avatar spawns at (1,2); otherwise,
  * it spawns at (7,2). This method also applies default values (20 health, 
- * 2 attack) and updates the UI to reflect the new avatar.</p>
+ * 2 attack) and updates the UI to reflect the new avatar.
  *
  * @param board  The Board instance where the avatar is placed.
  * @param player The player who will control this avatar.
@@ -113,9 +113,9 @@ public void initializeAvatar(Board board, Player player) {
  * special rules or animations. This includes handling avatar robustness,
  * triggering Zeal for the AI Avatar, and clamping health within [0..20].
  *
- * <p>If the new health reaches zero, the unit is removed from the board
+ * If the new health reaches zero, the unit is removed from the board
  * and appropriate death animations are played. Additionally, if the unit
- * is an avatar, the player's health is updated accordingly.</p>
+ * is an avatar, the player's health is updated accordingly.
  *
  * @param targetUnit  The unit whose health is being changed.
  * @param desiredHealth The new health value to apply.
@@ -249,7 +249,7 @@ public void modifyUnitHealth(Unit targetUnit, int desiredHealth) {
 /**
  * Places a new unit onto the board at a specified tile, initializes 
  * its stats based on the card data, and triggers any relevant animations.
- * <p>
+ * 
  * This method also handles setting the unit's movement/attack state 
  * and summoning additional units if certain card abilities (like Gloom Chaser)
  * are triggered.
@@ -355,8 +355,8 @@ public void zeal() {
 /**
  * Determines if a unit can be summoned on the given tile.
  *
- * <p>Currently, summoning is only valid if the tile's highlight mode is set to 1.
- * This may change in future implementations where different cards have specific summoning rules.</p>
+ * Currently, summoning is only valid if the tile's highlight mode is set to 1.
+ * This may change in future implementations where different cards have specific summoning rules.
  *
  * @param card The card representing the unit to be summoned.
  * @param targetTile The tile where the unit is being summoned.

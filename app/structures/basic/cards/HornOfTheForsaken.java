@@ -1,4 +1,3 @@
-// HornOfTheForsaken.java
 package structures.basic.cards;
 
 import akka.actor.ActorRef;

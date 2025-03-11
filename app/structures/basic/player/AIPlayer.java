@@ -12,11 +12,11 @@ import java.util.List;
  * The {@code AIPlayer} class represents an AI-controlled player in the game.
  * It extends the {@link Player} class and delegates AI decision-making 
  * to an instance of {@link AIManager}.
- * <p>
+ * 
  * Responsibilities:
  * - Delegates turn execution to the {@link AIManager}.
  * - Provides access to AI-controlled units.
- * </p>
+ * 
  */
 
 public class AIPlayer extends Player {

@@ -11,10 +11,10 @@ import java.util.*;
 /**
  * The {@code AICardSelector} class is responsible for handling AI-controlled card selection and casting logic.
  * It evaluates available spells and summoning options, determines the best course of action, and executes the corresponding move.
- * <p>
+ * 
  * This class interacts with the {@link GameState}, {@link BoardManager}, and {@link AbilityHandler} to ensure AI's
  * decisions align with game mechanics and resource availability.
- * </p>
+ * 
  */
 public class AICardSelector {
     private final GameState gameState;

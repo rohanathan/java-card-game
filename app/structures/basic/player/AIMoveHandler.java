@@ -10,10 +10,10 @@ import java.util.*;
 /**
  * The {@code AIMoveHandler} class is responsible for handling AI-controlled movement and attack decisions.
  * It gathers potential movements and attacks, evaluates their effectiveness, and executes the best possible action.
- * <p>
+ * 
  * It collaborates with the {@link GameState}, {@link CombatHandler}, and {@link BoardManager} to determine
  * valid movements and attacks based on the current game state.
- * </p>
+ * 
  */
 
 public class AIMoveHandler {
@@ -178,7 +178,7 @@ public class AIMoveHandler {
      * @param attack The attack action to execute.
      */
     private void executeAttack(PossibleAttack attack) {
-        gameState.getCombatHandler().attack(attack.unit, attack.tile.getUnit());
+        gameState.getCombatHandler().performAttack(attack.unit, attack.tile.getUnit());
         attack.unit.setHasAttacked(true);
     }
 

@@ -141,7 +141,6 @@ public class Wraithling extends Unit{
 		return adjacentTiles.isEmpty() ? null : adjacentTiles.get(0);
 	}
 
-
 	public static void summonAvatarWraithling(ActorRef out, GameState gs) {
 		
 		
@@ -165,8 +164,5 @@ public class Wraithling extends Unit{
 			e.printStackTrace();
 		}
 	}
-
-
-
 }
 

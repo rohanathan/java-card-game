@@ -17,11 +17,20 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+/**
+ * Handles combat-related interactions between units within the game.
+ * 
+ * Responsible for managing unit attacks, counterattacks, determining valid attack and movement tiles,
+ * handling special combat situations (e.g., provoke), and ensuring units perform correct animations 
+ * during combat events.
+ * 
+ * This class interacts closely with the GameState, BoardManager, and UnitManager to enforce game rules
+ * and maintain accurate representation of the combat state within the UI.
+ */
 public class CombatHandler {
     
 
-     private final ActorRef out;
+    private final ActorRef out;
     private final GameState gameState;
     
     public CombatHandler(ActorRef out, GameState gameState) 
@@ -31,199 +40,329 @@ public class CombatHandler {
         this.gameState = gameState; 
 
     }
-    // Attack an enemy unit and play the attack animation
-	public void attack(Unit attacker, Unit attacked) {
-		if (!attacker.hasAttacked()) {
-			// remove highlight from all tiles
-			gameState.getBoardManager().updateTileHighlight(attacked.getActiveTile(gameState.getBoard()), 2);
-			BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.attack);
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			BasicCommands.playUnitAnimation(out, attacked, UnitAnimationType.hit);
-			try {
-				Thread.sleep(750);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.idle);
-			BasicCommands.playUnitAnimation(out, attacked, UnitAnimationType.idle);
-
-			// update health
-			gameState.getUnitManager().modifyUnitHealth(attacked, attacked.getHealth() - attacker.getAttack());
-			if (attacker.getAttack() >= 0 && attacker.equals(gameState.getHuman().getAvatar()) 
-					&& gameState.getHuman().getRobustness() > 0) {
- 
-					Wraithling.summonAvatarWraithling(out, gameState);
-				}
-                gameState.getBoardManager().removeHighlightFromAll();
-
-				
-			}
-
-			// Only counter attack if the attacker is the current player
-			// To avoid infinitely recursive counter attacking
-			if (attacker.getOwner() == gameState.getCurrentPlayer()) {
-				counterAttack(attacker, attacked);
-			}
-
-			attacker.setHasAttacked(true);
-			attacker.setHasMoved(true);
+	/**
+ 	* Performs an attack from one unit to another, handling all relevant
+ 	* animations, UI updates, health modifications, and special conditions such
+ 	* as summoning Wraithlings for the human avatar.
+ 	*
+ 	* @param attacker the unit performing the attack
+ 	* @param defender the unit receiving the attack
+ 	*/
+	 public void performAttack(Unit attacker, Unit defender) {
+		if (attacker.hasAttacked()) {
+			return;
 		}
-       
-	// Move to the closest adjacent unit to defender, and call adjacent attack
-	public void moveAndAttack(Unit attacker, Unit attacked) {
-		// Retrieve the tiles of the board and the valid movement tiles for the attacker
-		Tile[][] tiles = gameState.getBoard().getTiles();
-		Set<Tile> validMoveTiles = gameState.getBoardManager().getValidMoves(tiles, attacker);
-		Tile defenderTile = attacked.getActiveTile(gameState.getBoard());
-
-		// Initialize variables to keep track of the closest tile and its distance
-		Tile closestTile = null;
-		double closestDistance = Double.MAX_VALUE;
-
-		// Iterate over each valid movement tile
-		for (Tile tile : validMoveTiles) {
-			// Ensure the tile is not occupied
-			if (!tile.isOccupied()) {
-				// Calculate the distance to the defender's tile
-				double distance = Math.sqrt(Math.pow(tile.getTilex() - defenderTile.getTilex(), 2) + Math.pow(tile.getTiley() - defenderTile.getTiley(), 2));
-				// If this tile is closer than any previously examined tile, update closestTile and closestDistance
-				if (distance < closestDistance) {
-					closestTile = tile;
-					closestDistance = distance;
-				}
-			}
-		}
-
-		// If a closest tile has been found, move the attacker to this tile
-		if (closestTile != null) {
-			gameState.getBoardManager().updateUnitPositionAndMove(attacker, closestTile);
-			// Ensure a small delay to let the move action complete before attacking
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// After moving, perform the attack if the attacker is now adjacent to the defender
-		if (isAttackable(attacker.getActiveTile(gameState.getBoard()), defenderTile)) {
-			System.out.println("Combat initiated! Attacker strikes from an adjacent position!");
-			attack(attacker, attacked);
-		} else {
-			System.out.println("Attack failed—target is out of range!");
-		}
-	} 
 	
-    // Counter attack an enemy unit and play the attack animation
-	public void counterAttack(Unit originalAttacker, Unit counterAttacker) {
-		if (counterAttacker.getHealth() > 0) {
-			System.out.println("Counter attacking");
-			attack(counterAttacker, originalAttacker);
-			counterAttacker.setHasAttacked(false);
-			counterAttacker.setHasMoved(false);
+		// Highlight target tile and initiate animations
+		Tile defenderTile = defender.getActiveTile(gameState.getBoard());
+		gameState.getBoardManager().updateTileHighlight(defenderTile, 2);
+		
+		BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.attack);
+		sleepSafely(1500);
+	
+		BasicCommands.playUnitAnimation(out, defender, UnitAnimationType.hit);
+		sleepSafely(750);
+	
+		BasicCommands.playUnitAnimation(out, attacker, UnitAnimationType.idle);
+		BasicCommands.playUnitAnimation(out, defender, UnitAnimationType.idle);
+	
+		// Adjust health of the defending unit
+		int adjustedHealth = defender.getHealth() - attacker.getAttack();
+		gameState.getUnitManager().modifyUnitHealth(defender, adjustedHealth);
+	
+		// Special condition: Human avatar summons Wraithling on successful attack
+		if (attacker.equals(gameState.getHuman().getAvatar()) && 
+			gameState.getHuman().getRobustness() > 0 && attacker.getAttack() > 0) {
+			Wraithling.summonAvatarWraithling(out, gameState);
 		}
-	}	
-    // // Highlight tiles for attacking only
-	public void highlightAttackRange(Unit unit) {
+	
+		// Clear tile highlights
+		gameState.getBoardManager().removeHighlightFromAll();
+	
+		// Allow the defender to counterattack if applicable
+		if (attacker.getOwner() == gameState.getCurrentPlayer()) {
+			counterAttack(attacker, defender);
+		}
+	
+		// Mark attacker as having moved and attacked
+		attacker.setHasAttacked(true);
+		attacker.setHasMoved(true);
+	}
+	
+	/**
+	 * Sleeps the current thread for a specified duration without requiring 
+	 * explicit try-catch blocks.
+	 *
+	 * @param millis duration in milliseconds to sleep
+	 */
+	private void sleepSafely(int millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			System.err.println("Animation sleep interrupted: " + e.getMessage());
+		}
+	}
+	
+       /**
+ 	* Moves the attacking unit closer to the target unit and initiates an attack if adjacent.
+ 	* 
+ 	* The method performs the following actions:
+ 	* 
+ 	*   Determines all tiles available for the attacker to move.
+ 	*   Selects the closest available unoccupied tile adjacent to the target unit.
+ 	*   Moves the attacker to the selected tile, updating the UI accordingly.
+ 	*   If the attacker successfully reaches an adjacent position, it initiates an attack on the target unit.
+ 	* 
+ 	*
+ 	* @param attacker the unit initiating the move-and-attack action.
+ 	* @param target the defending unit being attacked.
+ 	*/
+	public void moveAndAttack(Unit attacker, Unit target) {
+		// Get all tiles from the board
+		Tile[][] boardTiles = gameState.getBoard().getTiles();
+		
+		// Obtain valid movement options for the attacker
+		Set<Tile> availableTiles = gameState.getBoardManager().getValidMoves(boardTiles, attacker);
+		
+		// Retrieve target's tile position
+		Tile targetTile = target.getActiveTile(gameState.getBoard());
+	
+		// Track the best tile to move to and its distance
+		Tile optimalTile = null;
+		double shortestDistance = Double.MAX_VALUE;
+	
+		// Iterate over potential movement tiles to find closest position
+		for (Tile tile : availableTiles) {
+			if (!tile.isOccupied()) {
+				double currentDistance = calculateDistance(tile, targetTile);
+				if (currentDistance < shortestDistance) {
+					optimalTile = tile;
+					shortestDistance = currentDistance;
+				}
+			}
+		}
+	
+		// Move attacker to optimal tile, if found
+		if (optimalTile != null) {
+			gameState.getBoardManager().updateUnitPositionAndMove(attacker, optimalTile);
+			pauseForMovementAnimation();
+		}
+	
+		// Attack the target if attacker is now adjacent
+		if (isWithinAttackRange(attacker.getActiveTile(gameState.getBoard()), targetTile)) {
+			System.out.println("Attacker has successfully moved adjacent. Initiating attack!");
+			performAttack(attacker, target);
+		} else {
+			System.out.println("Attack aborted. Target is out of attack range.");
+		}
+	}
+	/**
+ 	* Calculates the Euclidean distance between two tiles.
+ 	*
+	* @param sourceTile the first tile.
+ 	* @param destinationTile the second tile.
+ 	* @return the distance between the two tiles.
+ 	*/ 
+	private double calculateDistance(Tile sourceTile, Tile destinationTile) {
+		int xDiff = sourceTile.getTilex() - destinationTile.getTilex();
+		int yDiff = sourceTile.getTiley() - destinationTile.getTiley();
+		return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+	}
+	
+	/**
+ 	* Introduces a delay to synchronize animations with unit movements.
+ 	*/
+	private void pauseForMovementAnimation() {
+		try {
+			Thread.sleep(1000); // Pause to allow movement animations to finish
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			System.err.println("Movement animation interrupted: " + e.getMessage());
+		}
+	}
+
+	/**
+	* Initiates a counterattack from the defending unit onto the original attacker.
+	* 
+	* A counterattack is executed if the defending unit survives the initial attack (health > 0).
+	* After the counterattack, the defending unit's attack and movement statuses are reset
+	* to allow future actions in subsequent turns.
+	*
+	* @param attacker The unit that initiated the original attack.
+	* @param defender The unit performing the counterattack.
+	*/
+    // Counter attack an enemy unit and play the attack animation
+	public void counterAttack(Unit attacker, Unit defender) {
+		if (defender.getHealth() <= 0) {
+			System.out.println("Defender cannot counterattack; it has been defeated.");
+			return;
+		}
+	
+		System.out.println(defender.getName() + " is initiating a counterattack on " + attacker.getName());
+		performAttack(defender, attacker);
+	
+		// Reset defender's state to allow future actions
+		defender.setHasAttacked(false);
+		defender.setHasMoved(false);
+	}
+
+    // Highlight tiles for attacking only
+	public void highlightPotentialAttacks(Unit unit) {
 		Set<Tile> validAttackTiles = findAttackTargets(unit);
 
 		// Highlight valid attack tiles
 		validAttackTiles.forEach(tile -> gameState.getBoardManager().updateTileHighlight(tile, 2)); // 2 for attack highlight mode
 	}
 
-    // Calculate and return the set of valid attack targets for a given unit
-	public Set<Tile> findAttackTargets(Unit unit) {
-		Set<Tile> validAttacks = new HashSet<>();
-		Player opponent = gameState.getInactivePlayer();
-
-		// Default target determination
-		if (!unit.hasAttacked()) {
-			validAttacks.addAll(getValidTargets(unit, opponent));
+	/**
+ 	* Retrieves all valid tiles that the specified unit can target for an attack in the current turn.
+ 	*
+	 * This method first ensures the unit has not already attacked during the current turn.
+ 	* If the unit is eligible to attack, it collects all potential enemy tiles within range.
+ 	*
+ 	* @param attacker The unit for which to determine potential attack targets.
+ 	* @return A set of tiles representing all valid attack targets for this unit.
+	 */
+	public Set<Tile> findAttackTargets(Unit attacker) {
+		Set<Tile> attackableTiles = new HashSet<>();
+	
+		// Only calculate if the unit hasn't attacked yet
+		if (!attacker.hasAttacked()) {
+			Player opposingPlayer = gameState.getInactivePlayer();
+			attackableTiles.addAll(getValidTargets(attacker, opposingPlayer));
 		}
-
-		return validAttacks;
+	
+		return attackableTiles;
 	}
-    // Returns the set of valid attack targets for a given unit
-	public Set<Tile> getValidTargets(Unit unit, Player opponent) {
-		Set<Tile> validAttacks = new HashSet<>();
-		Set<Position> provokers = checkProvoker(unit.getActiveTile(gameState.getBoard()));
-		Tile unitTile = unit.getActiveTile(gameState.getBoard());
+	
+	/**
+ 	* Determines and returns a set of tiles that contain enemy units which the given unit can attack.
+ 	*
+ 	* If the unit is provoked by adjacent enemy units with a provoke ability, this method returns 
+ 	* only the provoking units' tiles. Otherwise, it identifies all enemy units within the unit's standard
+ 	* attack range.
+ 	*
+ 	* @param attacker The unit for which valid attack targets need to be determined.
+ 	* @param opponent The opposing player whose units are potential attack targets.
+ 	* @return A set of Tiles that the attacker can target this turn.
+ 	*/	
+	public Set<Tile> getValidTargets(Unit attacker, Player opponent) {
+		Set<Tile> attackableTiles = new HashSet<>();
+		// Check for provokers around the attacker first
 
-		// Attack adjacent units if there are any
-		if (!provokers.isEmpty()) {
-			for (Position position : provokers) {
+		Set<Position> provokerPositions = identifyProvokingUnits(attacker.getActiveTile(gameState.getBoard()));
+		Tile attackerTile = attacker.getActiveTile(gameState.getBoard());
+
+		// If provokers exist, attacker must prioritize them
+		if (!provokerPositions.isEmpty()) {
+			for (Position position : provokerPositions) {
 				System.out.println(position + "provoker position");
-				Tile provokerTile = gameState.getBoard().getTile(position.getTilex(), position.getTiley());
-				validAttacks.add(provokerTile);
+				Tile provokingTile = gameState.getBoard().getTile(position.getTilex(), position.getTiley());
+				attackableTiles.add(provokingTile);
 			}
-			return validAttacks;
+			return attackableTiles;
 		}
+    	// Otherwise, find all opponent units in regular attack range
+    	opponent.getUnits().stream()
+            	.map(unit -> unit.getActiveTile(gameState.getBoard()))
+            	.filter(opponentTile -> isWithinAttackRange(attackerTile, opponentTile))
+            	.forEach(attackableTiles::add);
 
-		opponent.getUnits().stream()
-				.map(opponentUnit -> opponentUnit.getActiveTile(gameState.getBoard()))
-				.filter(opponentTile -> isAttackable(unitTile, opponentTile))
-				.forEach(validAttacks::add);
-
-		return validAttacks;
+   	 	return attackableTiles;
 	}
 
 	// Boolean method to check if a unit is within attack range of another unit
-	public boolean isAttackable(Tile unitTile, Tile targetTile) {
+	public boolean isWithinAttackRange(Tile unitTile, Tile targetTile) {
 		int dx = Math.abs(unitTile.getTilex() - targetTile.getTilex());
 		int dy = Math.abs(unitTile.getTiley() - targetTile.getTiley());
 		return dx < 2 && dy < 2;
 	}
-    // Checks if provoke unit is present on the board and around the tile on which an alleged enemy unit (target) is located
-	public Set<Position> checkProvoker(Tile tile) {
-		Set<Position> provokers = new HashSet<>();
+	/**
+ 	* Identifies and returns positions of enemy units with the "Provoke" ability
+ 	* surrounding a given tile. Provoking units force adjacent enemy units to prioritize
+ 	* attacking them.
+ 	*
+ 	* @param targetTile The tile to check around for provoking enemy units.
+ 	* @return A Set of Positions where enemy units with provoke ability are located.
+ 	*/
+	public Set<Position> identifyProvokingUnits(Tile targetTile) {
+	    Set<Position> provokingPositions = new HashSet<>();
 
-		for (Unit unit : gameState.getInactivePlayer().getUnits()) {
-			int tilex = tile.getTilex();
-			int tiley = tile.getTiley();
+    	int targetX = targetTile.getTilex();
+    	int targetY = targetTile.getTiley();
 
-			if (Math.abs(tilex - unit.getPosition().getTilex()) < 2 && Math.abs(tiley - unit.getPosition().getTiley()) < 2) {
-				if (unit.getName().equals("Rock Pulveriser") || unit.getName().equals("Swamp Entangler") ||
-						unit.getName().equals("Silverguard Knight") || unit.getName().equals("Ironcliff Guardian")) {
-					System.out.println("Provoker " + unit.getName() + " in the house.");
-					provokers.add(unit.getPosition());
-				}
-			}
-		}
-		return provokers;
+    	for (Unit enemyUnit : gameState.getInactivePlayer().getUnits()) {
+        	int enemyX = enemyUnit.getPosition().getTilex();
+        	int enemyY = enemyUnit.getPosition().getTiley();
+
+        	boolean isAdjacent = Math.abs(targetX - enemyX) <= 1 && Math.abs(targetY - enemyY) <= 1;
+       	 	boolean hasProvokeAbility = isUnitProvoking(enemyUnit);
+
+        	if (isAdjacent && hasProvokeAbility) {
+            	System.out.println("Provoking unit found: " + enemyUnit.getName());
+            	provokingPositions.add(enemyUnit.getPosition());
+       		}
+    	}
+    return provokingPositions;
 	}
-    // Returns true if the unit should be provoked based on adjacent opponents
-	public boolean checkProvoked(Unit unit) {
-		
-		Player opponent = (gameState.getCurrentPlayer() == gameState.getHuman()) ? gameState.getAi() : gameState.getHuman();
-		// Iterate over the opponent's units to check for adjacency and provoking units
-		for (Unit other : opponent.getUnits()) {
-
-			// Calculate the distance between the units
-			int unitx = unit.getPosition().getTilex();
-			int unity = unit.getPosition().getTiley();
-
-			// Check if the opponent unit's name matches any provoking unit
-			if (other.getName().equals("Rock Pulveriser") || other.getName().equals("Swamp Entangler") ||
-					other.getName().equals("Silverguard Knight") || other.getName().equals("Ironcliff Guardian")) {
-
-
-				// Check if the opponent unit is adjacent to the current unit
-				if (Math.abs(unitx - other.getPosition().getTilex()) <= 1 && Math.abs(unity - other.getPosition().getTiley()) <= 1) {
-					BasicCommands.addPlayer1Notification(out, unit.getName() + " has been provoked!", 2);
-					return true;
-				}
+	
+	/**	
+ 	* Checks if a given unit is currently provoked by adjacent enemy units.
+ 	* A unit is considered provoked if at least one adjacent enemy unit possesses
+ 	* the provoke ability.
+ 	*
+	* @param unit The unit to check for provocation status.
+ 	* @return True if the unit is provoked by an adjacent enemy unit; false otherwise.
+ 	*/	
+	 public boolean isUnitProvoked(Unit unit) {
+		Player opponent = (gameState.getCurrentPlayer() == gameState.getHuman()) 
+							? gameState.getAi() 
+							: gameState.getHuman();
+	
+		int unitX = unit.getPosition().getTilex();
+		int unitY = unit.getPosition().getTiley();
+	
+		for (Unit enemyUnit : opponent.getUnits()) {
+			int enemyX = enemyUnit.getPosition().getTilex();
+			int enemyY = enemyUnit.getPosition().getTiley();
+	
+			boolean isAdjacent = Math.abs(unitX - enemyX) <= 1 && Math.abs(unitY - enemyY) <= 1;
+			boolean hasProvokeAbility = isUnitProvoking(enemyUnit);
+	
+			if (isAdjacent && hasProvokeAbility) {
+				BasicCommands.addPlayer1Notification(out, unit.getName() + " has been provoked by " + enemyUnit.getName(), 2);
+				return true;
 			}
 		}
 		return false;
 	}
-    // // Highlight tiles for movement and attack
+	/**
+ 	* Determines if a given unit possesses the provoke ability based on its name.
+ 	*
+ 	* @param unit The unit to be checked.
+ 	* @return True if the unit has the provoke ability; false otherwise.
+ 	*/
+	private boolean isUnitProvoking(Unit unit) {
+    	String name = unit.getName();
+    	return name.equals("Rock Pulveriser") || name.equals("Swamp Entangler") ||
+           	   name.equals("Silverguard Knight") || name.equals("Ironcliff Guardian");
+	}
+
+	/**
+ 	* Highlights all tiles where a given unit can move or attack, 
+ 	* updating the game board accordingly.
+ 	*
+ 	* Movement tiles are highlighted first, and then adjacent enemy units within attack range
+ 	* are marked distinctly. This method visually guides the player to understand possible moves
+ 	* and attacks clearly.
+ 	*
+ 	* @param unit The unit for which valid moves and attacks are highlighted.
+ 	*/	
 	public void highlightValidMoves(Unit unit) {
 	    Tile[][] tiles = gameState.getBoard().getTiles();
+	    // Identify possible movement and attack tiles
+
 	    Set<Tile> validMoveTiles = gameState.getBoardManager().getValidMoves(tiles, unit);
 	    Set<Tile> validAttackTiles = gameState.getCombatHandler().findAttackTargets(unit);
 
@@ -246,7 +385,5 @@ public class CombatHandler {
 	            gameState.getBoardManager().updateTileHighlight(tile, 2);
 	        }
 	    }
-	}
-
-    
+	}    
 }
