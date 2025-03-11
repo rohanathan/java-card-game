@@ -36,10 +36,3 @@ public class InitializedGameStateTests {
     assertNotNull(gameState.getAi());
   }
 
-  @Test
-  public void checkGameManagersLoaded() {
-    
-    initalizeProcessor.processEvent(null, gameState, eventMessage); // send it to the initalize event processor
-    assertNotNull(gameState.gameManager);
-  }
-}

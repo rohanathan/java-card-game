@@ -212,13 +212,13 @@ public void modifyUnitHealth(Unit targetUnit, int desiredHealth) {
 				ShadowDancer.Deathwatch(gameState, out);
 			}
 			if (!unit.getName().equals("Bloodmoon Priestess")) {
-				BloodmoonPriestess.BloodmoonPriestessDeathwatch(out, gameState, gameState.gameManager);
+				BloodmoonPriestess.BloodmoonPriestessDeathwatch(out, gameState);
 			}
 			if (!unit.getName().equals("Shadow Watcher")) {
-				ShadowWatcher.ShadowWatcherDeathwatch(out, gameState, gameState.gameManager);
+				ShadowWatcher.ShadowWatcherDeathwatch(out, gameState);
 			}
 			if (!unit.getName().equals("Bad Omen")) {
-				BadOmen.BadOmenDeathwatch(out, gameState, gameState.gameManager, unit);
+				BadOmen.BadOmenDeathwatch(out, gameState, unit);
 			}
 		}
 

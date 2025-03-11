@@ -8,7 +8,6 @@ import java.util.List;
 
 import akka.actor.ActorRef;
 import commands.BasicCommands;
-import structures.GameManager;
 import structures.GameState;
 
 import structures.basic.Board;
@@ -151,7 +150,7 @@ public class Wraithling extends Unit{
 		summonWraithlingToTile(tile, out, gs);
 	}
 
-	public static void summonWraithlingForBloodmoonPriestess(Unit parent, ActorRef out, GameState gameState, GameManager gm) {
+	public static void summonWraithlingForBloodmoonPriestess(Unit parent, ActorRef out, GameState gameState) {
 		Tile currentTile = parent.getActiveTile(gameState.getBoard());
 		Tile randomTile = getRandomAdjacentUnoccupiedTile(currentTile, gameState.getBoard());
 

@@ -44,7 +44,6 @@ public class GameState {
 	private int totalUnits = 0;
 
 	// Entity objects that are part of the game state
-	public GameManager gameManager;
 	private Player human;
 	private Player ai;
 	private Board board;
@@ -56,15 +55,13 @@ public class GameState {
 	 * @param out
 	 */
 
-	public void init(ActorRef out, PlayerManager playerManager,BoardManager boardManager,CombatHandler combatHandler,UnitManager unitManager,AbilityHandler abilityHandler) {
-		
-		
-		
-		this.gameManager = new GameManager(out, this, playerManager,boardManager,combatHandler,unitManager,abilityHandler);
-		this.boardManager=boardManager;
-		this.combatHandler=combatHandler;
-		 this.unitManager=unitManager;
-		 this.abilityHandler=abilityHandler;
+	 public void init(ActorRef out, PlayerManager playerManager, BoardManager boardManager, CombatHandler combatHandler, UnitManager unitManager, AbilityHandler abilityHandler) {
+		this.boardManager = boardManager;
+		this.combatHandler = combatHandler;
+		this.unitManager = unitManager;
+		this.abilityHandler = abilityHandler;
+
+
 		this.board = boardManager.initializeBoard();
 		
 		// Initialize playerManager
@@ -88,7 +85,6 @@ public class GameState {
 		// Create the human and AI avatars
 		unitManager.initializeAvatar(board, human);
 		unitManager.initializeAvatar(board, ai);
-		// gameManager.loadUnitsForTesting(ai);
 
 		// Set the current player to the human player
 		this.currentPlayer = human;
@@ -254,9 +250,6 @@ public class GameState {
 	{
 		return abilityHandler;
 	}
-	public GameManager getGameManager()
-	{
-		return gameManager;
-	}
+
 }
 

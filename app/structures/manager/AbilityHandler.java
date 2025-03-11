@@ -98,7 +98,7 @@ public class AbilityHandler {
     }
 }
 
-// Method in GameManager class
+// Method in AbilityHandler class
 public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
 		
     if (gameState.getCurrentPlayer() instanceof HumanPlayer &&
