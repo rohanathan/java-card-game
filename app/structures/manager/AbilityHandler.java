@@ -11,9 +11,6 @@ import structures.basic.player.Player;
 import utils.BasicObjectBuilders;
 import utils.StaticConfFiles;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 /**
  * The {@code AbilityHandler} class is responsible for managing and executing 
@@ -110,19 +107,19 @@ public class AbilityHandler {
         // Summon Wraithling on the selected tile
         Wraithling.summonWraithlingToTile(tile, out, gameState);
         HumanPlayer player = (HumanPlayer) gameState.getHuman();
-        player.setWraithlingSwarmCounter(player.getWraithlingSwarmCounter() - 1);
+        player.setWsCounter(player.getWsCounter() - 1);
 
         // If there are more Wraithlings to summon, push the card to action history
-        if (player.getWraithlingSwarmCounter() > 0) {
+        if (player.getWsCounter() > 0) {
             // Highlight tiles for summoning
             highlightSpellRange(card, gameState.getCurrentPlayer());
-            BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWraithlingSwarmCounter() +" more wraithlings", 5);
+            BasicCommands.addPlayer1Notification(out, "You can summon " + player.getWsCounter() +" more wraithlings", 5);
             gameState.getActionHistory().push(card);
             gameState.getPlayerManager().modifyPlayerMana(gameState.getCurrentPlayer(), gameState.getCurrentPlayer().getMana() + card.getManacost());
         } else {
             // Remove highlight from all tiles and update hand positions
             BasicCommands.addPlayer1Notification(out, "All wraithlings summoned!", 5);
-            player.setWraithlingSwarmCounter(3);
+            player.setWsCounter(3);
         }
     }
 
@@ -242,10 +239,10 @@ public class AbilityHandler {
     
             // Reset the Wraithling Swarm counter and decrease mana as swarm counter < 3 indicates
             // that the player has started but not finished summoning all 3 Wraithlings
-            if (currentHuman.getWraithlingSwarmCounter() < 3) {
+            if (currentHuman.getWsCounter() < 3) {
                 BasicCommands.addPlayer1Notification(out, "Wraithling Swarm spell broken! Choose another tile!", 3);
     
-                currentHuman.setWraithlingSwarmCounter(3);
+                currentHuman.setWsCounter(3);
                 // Decrease player's mana after casting the spell
                 gameState.getHuman().setMana(currentHuman.getMana() - abilityCard.getManacost());
                 gameState.getPlayerManager().modifyPlayerMana(currentHuman, currentHuman.getMana());

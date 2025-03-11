@@ -4,7 +4,6 @@ import akka.actor.ActorRef;
 import commands.BasicCommands;
 import structures.basic.*;
 import structures.basic.cards.Card;
-import structures.basic.cards.Wraithling;
 import structures.basic.player.AIPlayer;
 import structures.basic.player.HumanPlayer;
 import structures.basic.player.Player;
@@ -105,7 +104,7 @@ public class GameState {
 	 */
 	public void endTurn(){
 		handleCardManagement();
-		currentPlayer.incrementTurn();
+		currentPlayer.increaseTurnNum();
 		this.playerManager.modifyPlayerMana(currentPlayer, 0);
 		switchCurrentPlayer();
 		this.playerManager.modifyPlayerMana(currentPlayer, currentPlayer.getTurn() + 1);
