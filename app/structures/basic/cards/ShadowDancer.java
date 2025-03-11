@@ -16,10 +16,10 @@ public class ShadowDancer extends Unit {
             if (unit.getName().equals("Shadowdancer")) {
             	
             	gs.getUnitManager().modifyUnitHealth(humanAvatar, humanAvatar.getHealth() + 1);
-            	gs.getAbilityHandler().healing(humanAvatar.getActiveTile(gs.getBoard()));
+            	gs.getAbilityHandler().animateHealingEffect(humanAvatar.getActiveTile(gs.getBoard()));
             	
             	gs.getUnitManager().modifyUnitHealth(aiAvatar, aiAvatar.getHealth() - 1);
-            	gs.getAbilityHandler().strike(aiAvatar.getActiveTile(gs.getBoard()));
+            	gs.getAbilityHandler().animateStrikeEffect(aiAvatar.getActiveTile(gs.getBoard()));
 
 				BasicCommands.addPlayer1Notification(out, "Shadowdancer heals avatar and hurts enemy!", 3);
 

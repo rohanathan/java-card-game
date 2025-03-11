@@ -60,14 +60,10 @@ public class GameState {
 		this.combatHandler = combatHandler;
 		this.unitManager = unitManager;
 		this.abilityHandler = abilityHandler;
-
-
+		this.playerManager = playerManager; 
+		// Initialize the board
 		this.board = boardManager.initializeBoard();
 		
-		// Initialize playerManager
-		this.playerManager = playerManager; 
-
-
 		// Initialize stack of action history
 		this.actionHistory = new Stack<>();
 

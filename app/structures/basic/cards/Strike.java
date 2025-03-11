@@ -13,7 +13,7 @@ public class Strike {
 		if (u != null && u.getOwner() instanceof HumanPlayer) {
 
 			gs.getUnitManager().modifyUnitHealth(u, u.getHealth() - 2);
-			gs.getAbilityHandler().strike(u.getActiveTile(gs.getBoard()));
+			gs.getAbilityHandler().animateStrikeEffect(u.getActiveTile(gs.getBoard()));
 			BasicCommands.addPlayer1Notification(out, "True Strike! -2 Health", 2);
 		}
 		

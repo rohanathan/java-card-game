@@ -20,7 +20,7 @@ public class BeamShock {
 		ai.getAiManager().setStunnedUnit(u);
 		Tile activeTile = u.getActiveTile(gs.getBoard());
 		if (activeTile != null) {
-			gs.getAbilityHandler().stunning(activeTile);
+			gs.getAbilityHandler().animateStunEffect(activeTile);
 		}
 		
 	}

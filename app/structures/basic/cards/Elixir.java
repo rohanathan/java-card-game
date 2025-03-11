@@ -36,7 +36,7 @@ public class Elixir {
 					leftTile.getUnit().getOwner()instanceof AIPlayer) {
 				gameState.getUnitManager().modifyUnitHealth(leftTile.getUnit(), leftTile.getUnit().getHealth() + healthBoost);
 				gameState.getUnitManager().updateUnitAttack(leftTile.getUnit(), leftTile.getUnit().getAttack() + attackBoost);
-				gameState.getAbilityHandler().healing(leftTile);
+				gameState.getAbilityHandler().animateHealingEffect(leftTile);
 
 	        }
 			
@@ -49,7 +49,7 @@ public class Elixir {
 					rightTile.getUnit().getOwner() instanceof AIPlayer) {
 				gameState.getUnitManager().modifyUnitHealth(rightTile.getUnit(), rightTile.getUnit().getHealth() + healthBoost);
 				gameState.getUnitManager().updateUnitAttack(rightTile.getUnit(), rightTile.getUnit().getAttack() + attackBoost);
-				gameState.getAbilityHandler().healing(rightTile);
+				gameState.getAbilityHandler().animateHealingEffect(rightTile);
 
 			}
 
@@ -87,7 +87,7 @@ public class Elixir {
             }
         }
 		BasicCommands.addPlayer1Notification(out, "Sundrop Elixir heals a unit!", 3);
-        gs.getAbilityHandler().healing(unit.getActiveTile(gs.getBoard()));
+        gs.getAbilityHandler().animateHealingEffect(unit.getActiveTile(gs.getBoard()));
     }
 
 }

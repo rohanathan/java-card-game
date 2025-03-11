@@ -158,7 +158,7 @@ public class AICardSelector {
      * @param spell The spell action to execute.
      */
     private void executeSpell(PossibleSpell spell) {
-        gameState.getAbilityHandler().removeFromHandAndCast(gameState, spell.card, spell.tile);
+        gameState.getAbilityHandler().castSpellAndUpdateHand(gameState, spell.card, spell.tile);
         aiPlayer.setMana(aiPlayer.getMana() - spell.card.getManacost());
     }
 
