@@ -63,20 +63,20 @@ public class AbilityHandler {
 
 		System.out.println("Highlighting spellrange " + card.getCardname());
 	}
-    // Method for casting the Horn of the Forsaken spell 
-	public void HornOfTheForesaken(Card card) { 
-        EffectAnimation effect = BasicObjectBuilders.loadEffect(StaticConfFiles.something); 
-        BasicCommands.playEffectAnimation(out, effect, gameState.getHuman().getAvatar().getActiveTile(gameState.getBoard())); 
-        gameState.getPlayerManager().notClickingCard(); 
-        BasicCommands.addPlayer1Notification(out, "You gained +3 robustness!", 2); 
-        gameState.getBoardManager().removeHighlightFromAll(); 
+    // // Method for casting the Horn of the Forsaken spell 
+	// public void HornOfTheForesaken(Card card) { 
+    //     EffectAnimation effect = BasicObjectBuilders.loadEffect(StaticConfFiles.something); 
+    //     BasicCommands.playEffectAnimation(out, effect, gameState.getHuman().getAvatar().getActiveTile(gameState.getBoard())); 
+    //     gameState.getPlayerManager().notClickingCard(); 
+    //     BasicCommands.addPlayer1Notification(out, "You gained +3 robustness!", 2); 
+    //     gameState.getBoardManager().removeHighlightFromAll(); 
  
-        try { 
-            Thread.sleep(1000); 
-        } catch (InterruptedException e) { 
-            e.printStackTrace(); 
-        } 
-    } 
+    //     try { 
+    //         Thread.sleep(1000); 
+    //     } catch (InterruptedException e) { 
+    //         e.printStackTrace(); 
+    //     } 
+    // } 
  // Method for casting the Wraithling Swarm spell
  public void WraithlingameStatewarm(Card card, Tile tile) {
     // Number of WraithlingameState to summon
@@ -135,7 +135,7 @@ public void removeFromHandAndCast( GameState gameState, Card card, Tile tile) {
 
     // Perform actions based on the card type
     if (card.getCardname().equals("Horn of the Forsaken")) {
-        HornOfTheForesaken(card);
+        HornOfTheForsaken.castSpell(gameState, out);
         // Increase player's robustness after casting the spell
         gameState.getCurrentPlayer().setRobustness(player.getRobustness() + 3);
         System.out.println("Player's robustness: " + player.getRobustness());
