@@ -7,6 +7,7 @@ import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import utils.BasicObjectBuilders;
 
 /**
  * A basic representation of a tile on the game board. Tiles have both a pixel
@@ -173,12 +174,30 @@ public class Tile {
 
 	}
 
-	public boolean isOccupied() {
-		return this.occupied;
+	public List<Tile> getAllAdjacentTiles(Board board){
+		List<Tile> tiles = new ArrayList<>();
+
+		//positions of adjacent tiles
+		int[][] directions = {
+				{-1, 0}, {-2, 0}, {1, 0}, {2, 0}, // Left and Right
+				{0, -1}, {0, -2}, {0, 1}, {0, 2}, // Up and Down
+				{-1, 1}, {1, 1}, {-1, -1}, {1, -1} // Diagonals
+		};
+
+		for (int i = 0; i < directions.length; i++) {
+			int newX = tilex + directions[i][0];
+			int newY = tiley + directions[i][1];
+
+			// Check if the new position is within bounds
+			if (isValidTile(newX, newY)) {
+				tiles.add(BasicObjectBuilders.loadTile(newX, newY));
+			}
+		} return tiles;
 	}
 
-	public void setNotOccupied() {
-		this.occupied = false;
+	//helper method to check if tile is valid
+	boolean isValidTile(int x, int y) {
+		return x >= 0 && x <= 8 && y >=0 && y <=4;
 	}
 
 	public void setOccupied() {
