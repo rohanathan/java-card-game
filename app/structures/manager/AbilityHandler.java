@@ -189,7 +189,7 @@ public class AbilityHandler {
                 break;
 
             case "Beamshock":
-                BeamShock.stunUnit(gameState);
+                BeamShock.unitStunned(gameState);
                 break;
 
             case "Truestrike":

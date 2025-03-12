@@ -82,7 +82,7 @@ public class AIManager {
         try {
             moveHandler.performAttacks();
             moveHandler.performMovements();
-            cardSelector.performCardActions();
+            cardSelector.performCardEffects();
             moveHandler.performAttacks();
             moveHandler.performMovements();
             moveHandler.performAttacks();

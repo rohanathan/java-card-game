@@ -1,28 +1,30 @@
 package structures.basic.cards;
 
 import akka.actor.ActorRef;
-import akka.stream.StreamRefMessages;
-import commands.BasicCommands;
 import structures.GameState;
-import structures.basic.BigCard;
-import structures.basic.EffectAnimation;
-import structures.basic.Tile;
 import structures.basic.Unit;
-import utils.BasicObjectBuilders;
-import utils.StaticConfFiles;
 
-import static utils.BasicObjectBuilders.loadUnit;
-import static utils.StaticConfFiles.card_badOmen;
-
+/**
+ * The BadOmen class represents a unit with a Deathwatch ability.
+ * Increases its attack each time a unit dies.
+ */
 public class BadOmen extends Unit {
 
-    // method to check if bad omen is onthe board and increment attack each time someone dies.
-    public static void BadOmenDeathwatch( ActorRef out, GameState gameState, Unit victim) {
-        for (Unit unit : gameState.getUnits()) {
-            if (unit.getName().equals("Bad Omen") &&
-            		!victim.getName().equals("Bad Omen")) {
-                gameState.getUnitManager().updateUnitAttack(unit, unit.getAttack() + 1);            }
+    /**
+     * Implements the Deathwatch ability for Bad Omen.
+     * Increases attack by 1 whenever another unit dies.
+     *
+     * @param out       The ActorRef for communication with the UI.
+     * @param gameState The current game state.
+     * @param victim    The unit that just died.
+     */
+    public static void BadOmenDeathwatch(ActorRef out, GameState gameState, Unit victim) {
+        for (int i = 0; i < gameState.getUnits().size(); i++) {
+            Unit unit = gameState.getUnits().get(i);
+            
+            if (unit.getName().equals("Bad Omen") && !victim.getName().equals("Bad Omen")) {
+                gameState.getUnitManager().updateUnitAttack(unit, unit.getAttack() + 1);
+            }
         }
-
     }
 }

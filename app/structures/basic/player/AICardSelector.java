@@ -35,7 +35,7 @@ public class AICardSelector {
      * Determines the best available card action (spell or summon) and executes it.
      * This method loops until no valid card plays are available.
      */
-    public void performCardActions() {
+    public void performCardEffects() {
         while (true) {
             PossibleSpell bestSpell = evaluateBestSpell();
             PossibleSummon bestSummon = evaluateBestSummon();
