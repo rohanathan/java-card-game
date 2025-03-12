@@ -23,13 +23,14 @@ public class Initalize implements EventProcessor {
 
 		gameState.gameInitalised = true;
 		// Create PlayerManager instance
-		PlayerManager playerManager = new PlayerManager(out, gameState); 
+		PlayerManager playerManager = new PlayerManager(out, gameState);
 		BoardManager boardManager=new BoardManager(out, gameState);
 		CombatHandler combatHandler=new CombatHandler(out, gameState);
 		UnitManager unitManager=new UnitManager(out, gameState);
 		AbilityHandler abilityHandler=new AbilityHandler(out, gameState);
+		TurnManager turnManager = new TurnManager(out, gameState);
 		// Initialise the game and pass services to GameState
-		gameState.init(out, playerManager,boardManager,combatHandler,unitManager,abilityHandler);
+		gameState.init(out, playerManager,boardManager,combatHandler,unitManager,abilityHandler, turnManager);
 
 	}
 

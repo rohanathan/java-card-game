@@ -31,6 +31,8 @@ public class Hand {
         return this.numCardsInHand;
     }
 
+    public boolean isFull() {return this.numCardsInHand >=6;}
+
     /**
      * Adds a card to the player's hand.
      *

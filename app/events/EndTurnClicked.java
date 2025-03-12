@@ -24,7 +24,7 @@ public class EndTurnClicked implements EventProcessor{
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
 		// Ends the current turn and prepares the game state for the next player
-		gameState.endTurn();
+		gameState.getTurnManager().endTurn();
 
 		// Resets unit movement and attack statuses, and unhighlights all game board tiles
 		gameState.getBoardManager().removeHighlightFromAll();
