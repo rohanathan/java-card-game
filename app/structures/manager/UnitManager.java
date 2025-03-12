@@ -82,7 +82,7 @@ public void initializeAvatar(Board board, Player player) {
 
     // Set the same values locally as well
     avatarUnit.setHealth(20);
-    avatarUnit.setMaxHealth(20);
+    avatarUnit.updateMaxHealth(20);
     avatarUnit.setAttack(2);
 
     // Small UI delay for smoothing animation
@@ -287,7 +287,7 @@ public void modifyUnitHealth(Unit targetUnit, int desiredHealth) {
 		BigCard bigCard = card.getBigCard();
 		modifyUnitHealth(unit, bigCard.getHealth());
 		updateUnitAttack(unit, bigCard.getAttack());
-		unit.setMaxHealth(bigCard.getHealth());
+		unit.updateMaxHealth(bigCard.getHealth());
 		if (!unit.getName().equals("Saberspine Tiger")) {
 			unit.setHasMoved(true);
 			unit.setHasAttacked(true);
