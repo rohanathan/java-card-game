@@ -22,7 +22,6 @@ public class GameState {
 
 
 	public boolean gameInitalised = false;
-
 	public boolean isGameOver = false;
 	private TurnManager turnManager;
 	private PlayerManager playerManager; // Add PlayerManager reference
