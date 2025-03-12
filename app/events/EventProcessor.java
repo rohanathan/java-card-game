@@ -23,5 +23,4 @@ public interface EventProcessor {
 	 * @return
 	 */
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message);
-	
 }
