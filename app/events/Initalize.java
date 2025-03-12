@@ -21,17 +21,19 @@ public class Initalize implements EventProcessor {
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
+		// Mark the game as initialized
 		gameState.gameInitalised = true;
-		// Create PlayerManager instance
+
+		// Create instances of all managers and handlers
 		PlayerManager playerManager = new PlayerManager(out, gameState);
 		BoardManager boardManager=new BoardManager(out, gameState);
 		CombatHandler combatHandler=new CombatHandler(out, gameState);
 		UnitManager unitManager=new UnitManager(out, gameState);
 		AbilityHandler abilityHandler=new AbilityHandler(out, gameState);
 		TurnManager turnManager = new TurnManager(out, gameState);
-		// Initialise the game and pass services to GameState
-		gameState.init(out, playerManager,boardManager,combatHandler,unitManager,abilityHandler, turnManager);
 
+		// Initialize the game state with the created managers and handlers
+		gameState.init(out, playerManager,boardManager,combatHandler,unitManager,abilityHandler, turnManager);
 	}
 
 }
