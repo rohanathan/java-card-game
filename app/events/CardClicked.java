@@ -23,11 +23,6 @@ public class CardClicked implements EventProcessor{
 
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
-		// Ignores any card click events when the AI player is taking its turn
-		if (gameState.getCurrentPlayer().equals(gameState.getAi())) {
-			return;
-		}
-
 		// Retrieves the position of the clicked card from the event message
 		int handPosition = message.get("position").asInt();
 
@@ -40,6 +35,11 @@ public class CardClicked implements EventProcessor{
 			cardAction.creaturePreEffect();
 		} else {
 			cardAction.spellPreEffect();
+		}
+
+		// Ignores any card click events when the AI player is taking its turn
+		if (gameState.getCurrentPlayer().equals(gameState.getAi())) {
+			return;
 		}
 	}
 
