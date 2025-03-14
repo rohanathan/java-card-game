@@ -48,24 +48,53 @@ public class TileClicked implements EventProcessor {
 			GameAction lastAction = gameState.getActionHistory().peek();
 
 			// Handle spell casting or unit interaction based on last action type
-			if (lastAction instanceof Card && !((Card) lastAction).isCreature()) {
-				SpellCastingHandler(out, gameState, (Card) lastAction, tile);
-			} else if (lastAction instanceof Unit) {
-				UnitActionHandler(gameState, (Unit) lastAction, tile);
-				// Change this to instanceof CreatureCard in the future
-			} else if (lastAction instanceof Card) {
-				CardSummoningHandler(gameState, (Card) lastAction, tile);
-			}
+			processLastAction(out, gameState, lastAction, tile);
 
 			// Clear last action if it's not related to current tile interaction
 			System.out.println("Popped " + gameState.getActionHistory().pop());;
 		} else {
 			// No prior action, check for unit on tile for possible movement or attack highlighting
-			if (tile.isOccupied() && tile.getUnit().getOwner() == gameState.getCurrentPlayer()) {
-				Unit unit = tile.getUnit();
-				highlightUnitActions(gameState, unit, tile);
-				gameState.getActionHistory().push(unit);
+			processUnitHighlighting(gameState, tile);
+		}
+	}
+
+	/**
+	 * Processes the last action in the history stack.
+	 *
+	 * @param out        The ActorRef for sending commands to the front-end.
+	 * @param gameState  The current state of the game.
+	 * @param lastAction The last action performed by the player.
+	 * @param tile       The tile that was clicked.
+	 */
+	private void processLastAction(ActorRef out, GameState gameState, GameAction lastAction, Tile tile) {
+		if (lastAction instanceof Card) {
+			Card card = (Card) lastAction;
+			if (card.isCreature()) {
+				CardSummoningHandler(gameState, card, tile);
+			} else {
+				SpellCastingHandler(out, gameState, card, tile);
 			}
+		} else if (lastAction instanceof Unit) {
+			UnitActionHandler(gameState, (Unit) lastAction, tile);
+		}
+	}
+
+	/**
+	 * Highlights valid moves and attacks for a unit.
+	 *
+	 * @param gameState The current state of the game.
+	 * @param tile      The tile where the unit is located.
+	 */
+	private void processUnitHighlighting(GameState gameState, Tile tile) {
+		if (tile.isOccupied() && tile.getUnit().getOwner() == gameState.getCurrentPlayer()) {
+			Unit unit = tile.getUnit();
+			gameState.getBoardManager().removeHighlightFromAll();
+			if (!unit.hasAttacked() && !unit.hasMoved()) {
+				gameState.getCombatHandler().highlightValidMoves(unit);
+			} else if (unit.hasMoved()) {
+				gameState.getCombatHandler().highlightPotentialAttacks(unit);
+			}
+			gameState.getActionHistory().push(unit);
 		}
 	}
 
