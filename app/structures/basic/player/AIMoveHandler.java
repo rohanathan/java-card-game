@@ -71,6 +71,7 @@ public class AIMoveHandler {
         for (Unit unit : aiPlayer.getUnits()) {
             if (!unit.hasAttacked()) {
                 for (Tile target : gameState.getCombatHandler().findAttackTargets(unit)) {
+                    System.out.println("AI unit " + unit.getName() + " can attack " + target.getUnit().getName() + " at tile (" + target.getTilex() + ", " + target.getTiley() + ")");
                     attacks.add(new PossibleAttack(unit, target));
                 }
             }
@@ -134,14 +135,30 @@ public class AIMoveHandler {
         Unit target = attack.tile.getUnit();
         int score = 0;
 
-        if (target == null) return;
+        if (target == null) {
+            System.out.println("Attack evaluation aborted: No target unit on tile.");
+            return;
+        }
+        System.out.println("Evaluating attack from " + attack.unit.getName() +
+        " (Attack: " + attack.unit.getAttack() + ") to " + target.getName() +
+        " (Health: " + target.getHealth() + ")");
 
-        if (target == gameState.getHuman().getAvatar()) score += 50;
-        if (target.getHealth() <= attack.unit.getAttack()) score += 100;
-        if (isProvoker(target)) score += 80;
-
+        if (target == gameState.getHuman().getAvatar()) {
+            score += 50;
+            System.out.println("Target is human avatar, adding 50 score.");
+        }
+        if (target.getHealth() <= attack.unit.getAttack()) {
+            score += 100;
+            System.out.println("Target can be killed in one hit, adding 100 score.");
+        }
+        if (isProvoker(target)) {
+            score += 80;
+            System.out.println("Target is a provoker, adding 80 score.");
+        }
+    
         attack.score = score;
-    }
+        System.out.println("Total attack score: " + attack.score);
+        }
 
     /**
      * Evaluates a movement by assigning a score based on positioning advantages.
