@@ -18,18 +18,18 @@ import structures.manager.*;
  * Indicates that the user has clicked an object on the game canvas, in this case a tile.
  * The event returns the x (horizontal) and y (vertical) indices of the tile that was
  * clicked. Tile indices start at 1.
- * 
- * { 
+ *
+ * {
  *   messageType = “tileClicked”
  *   tilex = <x index of the tile>
  *   tiley = <y index of the tile>
  * }
- * 
+ *
  * @author Dr. Richard McCreadie
  *
  */
 public class TileClicked implements EventProcessor {
-	
+
 	@Override
 	public void processEvent(ActorRef out, GameState gameState, JsonNode message) {
 
@@ -38,22 +38,23 @@ public class TileClicked implements EventProcessor {
 			return;
 		}
 
+		// Extract tile coordinates from the message
 		int tilex = message.get("tilex").asInt();
 		int tiley = message.get("tiley").asInt();
 		Tile tile = gameState.getBoard().getTile(tilex, tiley);
 
-		// Check if there's an action in history
+		// Check if there's a previous action in the action history
 		if (!gameState.getActionHistory().isEmpty()) {
 			GameAction lastAction = gameState.getActionHistory().peek();
 
 			// Handle spell casting or unit interaction based on last action type
 			if (lastAction instanceof Card && !((Card) lastAction).isCreature()) {
-				handleSpellCasting(out, gameState, (Card) lastAction, tile);
+				SpellCastingHandler(out, gameState, (Card) lastAction, tile);
 			} else if (lastAction instanceof Unit) {
-				handleUnitAction(gameState, (Unit) lastAction, tile);
-			// Change this to instanceof CreatureCard in the future
+				UnitActionHandler(gameState, (Unit) lastAction, tile);
+				// Change this to instanceof CreatureCard in the future
 			} else if (lastAction instanceof Card) {
-				handleCardSummoning(gameState, (Card) lastAction, tile);
+				CardSummoningHandler(gameState, (Card) lastAction, tile);
 			}
 
 			// Clear last action if it's not related to current tile interaction
@@ -69,14 +70,14 @@ public class TileClicked implements EventProcessor {
 	}
 
 	/**
-	 * this will be used to handle the spelling logic
+	 * Handles the logic for casting a spell.
 	 *
-	 * @param out
-	 * @param gameState
-	 * @param card
-	 * @param tile
+	 * @param out       The ActorRef to send notifications to the player.
+	 * @param gameState The current state of the game.
+	 * @param card      The spell card being cast.
+	 * @param tile      The target tile for the spell.
 	 */
-	private void handleSpellCasting(ActorRef out, GameState gameState, Card card, Tile tile) {
+	private void SpellCastingHandler(ActorRef out, GameState gameState, Card card, Tile tile) {
 	    // Check if player has sufficient mana for casting the spell
 	    if (gameState.getHuman().getMana() < card.getManacost()) {
 	        // Notify the player of insufficient mana
@@ -86,12 +87,8 @@ public class TileClicked implements EventProcessor {
 	        return; // Exit the method early if mana is insufficient
 	    }
 
-	    // Call the method to remove the card from hand and cast the spell
+		// Cast the spell and update the player's hand
 	    gameState.getAbilityHandler().castSpellAndUpdateHand(gameState, card, tile);
-
-
-	    // Remove highlight from all tiles
-
 	}
 
 	/**
@@ -100,13 +97,15 @@ public class TileClicked implements EventProcessor {
 	 * @param unit
 	 * @param targetTile
 	 */
-	private void handleUnitAction(GameState gameState, Unit unit, Tile targetTile) {
+	private void UnitActionHandler(GameState gameState, Unit unit, Tile targetTile) {
 		// Early return if targetTile is null
 		if (targetTile == null) {
 			System.out.println("Target tile is null.");
 			gameState.getBoardManager().removeHighlightFromAll();
 			return;
 		}
+
+		// Check if the unit is stunned (prevent actions)
 		AIPlayer ai = (AIPlayer) gameState.getAi();
 		if (ai.getAiManager().getStunnedUnit()==unit) {
 			System.out.println("Unit is stunned.");
@@ -116,6 +115,7 @@ public class TileClicked implements EventProcessor {
 			return;
 		}
 
+		// Early return if the unit is null
 		if (unit == null) {
 			System.out.println("Unit is null.");
 			gameState.getBoardManager().removeHighlightFromAll();
@@ -155,8 +155,14 @@ public class TileClicked implements EventProcessor {
 		}
 	}
 
-	// Place unit card on board if tile is valid
-	private void handleCardSummoning(GameState gameState, Card card, Tile tile) {
+	/**
+	 * Handles the summoning of a unit card onto the board.
+	 *
+	 * @param gameState The current state of the game.
+	 * @param card      The card being summoned.
+	 * @param tile      The target tile for the summon.
+	 */
+	private void CardSummoningHandler(GameState gameState, Card card, Tile tile) {
 		if (gameState.getUnitManager().isValidSummon(card, tile)) {
 			gameState.getAbilityHandler().castCardFromHand(card, tile);
 		} else {
@@ -164,11 +170,16 @@ public class TileClicked implements EventProcessor {
 		}
 	}
 
-	// Highlight valid moves and attacks for unit
-	private void highlightUnitActions(GameState gameState, Unit unit, Tile tile) {
+	/**
+	 * Highlights valid moves and attacks for a unit.
+	 *
+	 * @param gameState The current state of the game.
+	 * @param unit      The unit whose actions are being highlighted.
+	 * @param tile      The tile the unit is currently on.
+	 */	private void highlightUnitActions(GameState gameState, Unit unit, Tile tile) {
 		// Clear all highlighted tiles
 		gameState.getBoardManager().removeHighlightFromAll();
-		
+
 		// Highlight move and attack range based on unit's turn state
 		if (!unit.hasAttacked() && !unit.hasMoved()) {
 			gameState.getCombatHandler().highlightValidMoves(unit);
