@@ -67,16 +67,14 @@ public class TileClicked implements EventProcessor {
 	 * @param tile       The tile that was clicked.
 	 */
 	private void processLastAction(ActorRef out, GameState gameState, GameAction lastAction, Tile tile) {
-		if (lastAction instanceof Card) {
-			Card card = (Card) lastAction;
-			if (card.isCreature()) {
-				CardSummoningHandler(gameState, card, tile);
-			} else {
-				SpellCastingHandler(out, gameState, card, tile);
-			}
-		} else if (lastAction instanceof Unit) {
-			UnitActionHandler(gameState, (Unit) lastAction, tile);
+		GameActionState state = StateFactory.getStateForAction(lastAction);
+		// If a valid state is found, handle the action
+		if (state != null) {
+			state.handleAction(out, gameState, tile);
+		} else {
+			System.out.println("No valid state found for the last action.");
 		}
+
 	}
 
 	/**
@@ -95,126 +93,6 @@ public class TileClicked implements EventProcessor {
 				gameState.getCombatHandler().highlightPotentialAttacks(unit);
 			}
 			gameState.getActionHistory().push(unit);
-		}
-	}
-
-	/**
-	 * Handles the logic for casting a spell.
-	 *
-	 * @param out       The ActorRef to send notifications to the player.
-	 * @param gameState The current state of the game.
-	 * @param card      The spell card being cast.
-	 * @param tile      The target tile for the spell.
-	 */
-	private void SpellCastingHandler(ActorRef out, GameState gameState, Card card, Tile tile) {
-	    // Check if player has sufficient mana for casting the spell
-	    if (gameState.getHuman().getMana() < card.getManacost()) {
-	        // Notify the player of insufficient mana
-	        BasicCommands.addPlayer1Notification(out, "Mana reserves depleted!", 2);
-	        gameState.getBoardManager().removeHighlightFromAll();
-	        gameState.getPlayerManager().notClickingCard();
-	        return; // Exit the method early if mana is insufficient
-	    }
-
-		// Cast the spell and update the player's hand
-	    gameState.getAbilityHandler().castSpellAndUpdateHand(gameState, card, tile);
-	}
-
-	/**
-	 * Process unit move or attack based on targetTile's state
-	 * @param gameState
-	 * @param unit
-	 * @param targetTile
-	 */
-	private void UnitActionHandler(GameState gameState, Unit unit, Tile targetTile) {
-		// Early return if targetTile is null
-		if (targetTile == null) {
-			System.out.println("Target tile is null.");
-			gameState.getBoardManager().removeHighlightFromAll();
-			return;
-		}
-
-		// Check if the unit is stunned (prevent actions)
-		AIPlayer ai = (AIPlayer) gameState.getAi();
-		if (ai.getAiManager().getStunnedUnit()==unit) {
-			System.out.println("Unit is stunned.");
-			unit.setHasMoved(true);
-			gameState.getBoardManager().removeHighlightFromAll();
-			gameState.getAbilityHandler().stunnedUnit(unit.getName());
-			return;
-		}
-
-		// Early return if the unit is null
-		if (unit == null) {
-			System.out.println("Unit is null.");
-			gameState.getBoardManager().removeHighlightFromAll();
-			return;
-		}
-
-		// Determine action based on tile's occupancy and highlight mode
-		if (!targetTile.isOccupied()) {
-			// Assuming all valid moves are already checked, directly move the unit
-			gameState.getBoardManager().updateUnitPositionAndMove(unit, targetTile);
-			System.out.println("Unit " + unit.getId() + " moved to " + targetTile.getTilex() + ", " + targetTile.getTiley());
-		} else if (targetTile.getHighlightMode() == 2) {
-			// Directly handle attack as validity should have been ensured beforehand
-			System.out.println("Attacking unit on tile " + targetTile.getTilex() + ", " + targetTile.getTiley());
-			Tile attackerTile = unit.getActiveTile(gameState.getBoard());
-
-			if (gameState.getCombatHandler().isWithinAttackRange(attackerTile, targetTile)) {
-				// Attack adjacent unit
-				if (targetTile.isOccupied()) {
-					System.out.println("Target tile is occupied by " + targetTile.getUnit());
-				}
-				gameState.getCombatHandler().performAttack(unit, targetTile.getUnit());
-				unit.setHasAttacked(true);
-				unit.setHasMoved(true);
-			} else {
-				// Move and attack
-				if (targetTile.isOccupied()) {
-					System.out.println("Target tile is occupied by " + targetTile.getUnit() + " and is attacked by " + unit);
-				}
-				gameState.getCombatHandler().moveAndAttack(unit, targetTile.getUnit());
-				unit.setHasAttacked(true);
-				unit.setHasMoved(true);
-			}
-
-			// Remove highlight from all tiles after action
-			gameState.getBoardManager().removeHighlightFromAll();
-		}
-	}
-
-	/**
-	 * Handles the summoning of a unit card onto the board.
-	 *
-	 * @param gameState The current state of the game.
-	 * @param card      The card being summoned.
-	 * @param tile      The target tile for the summon.
-	 */
-	private void CardSummoningHandler(GameState gameState, Card card, Tile tile) {
-		if (gameState.getUnitManager().isValidSummon(card, tile)) {
-			gameState.getAbilityHandler().castCardFromHand(card, tile);
-		} else {
-			gameState.getBoardManager().removeHighlightFromAll();
-		}
-	}
-
-	/**
-	 * Highlights valid moves and attacks for a unit.
-	 *
-	 * @param gameState The current state of the game.
-	 * @param unit      The unit whose actions are being highlighted.
-	 * @param tile      The tile the unit is currently on.
-	 */	private void highlightUnitActions(GameState gameState, Unit unit, Tile tile) {
-		// Clear all highlighted tiles
-		gameState.getBoardManager().removeHighlightFromAll();
-
-		// Highlight move and attack range based on unit's turn state
-		if (!unit.hasAttacked() && !unit.hasMoved()) {
-			gameState.getCombatHandler().highlightValidMoves(unit);
-		// Highlight attack range only, if unit has moved but not attacked
-		} else if (unit.hasMoved()) {
-			gameState.getCombatHandler().highlightPotentialAttacks(unit);
 		}
 	}
 }
